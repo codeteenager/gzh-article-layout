@@ -1,0 +1,713 @@
+<!DOCTYPE html><html lang="zh-CN"><head><style>body {transition: opacity ease-in 0.2s; } 
+body[unresolved] {opacity: 0; display: block; overflow: hidden; position: relative; } 
+</style><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#006c4a", "error-container": "#ffdad6", "tertiary-container": "#bfab56", "error": "#ba1a1a", "on-surface-variant": "#3d4a42", "on-surface": "#121c2a", "inverse-surface": "#273140", "secondary-fixed": "#6ffbbe", "outline": "#6d7a72", "outline-variant": "#bccac0", "surface": "#f9f9ff", "on-tertiary-container": "#4b3f00", "inverse-primary": "#68dba9", "secondary-fixed-dim": "#4edea3", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002113", "surface-container-highest": "#d9e3f7", "surface-dim": "#d0daef", "on-secondary-container": "#00714d", "secondary": "#006c49", "secondary-container": "#6cf8bb", "surface-container-lowest": "#ffffff", "on-background": "#121c2a", "surface-container-low": "#eff3ff", "on-secondary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#85f8c4", "primary": "#006948", "inverse-on-surface": "#ebf1ff", "on-error": "#ffffff", "primary-container": "#00855d", "tertiary-fixed-dim": "#dcc66e", "on-tertiary-fixed": "#221b00", "on-primary": "#ffffff", "surface-bright": "#f9f9ff", "on-primary-fixed": "#002114", "primary-fixed-dim": "#68dba9", "on-primary-fixed-variant": "#005137", "surface-container": "#e6eeff", "on-primary-container": "#f5fff7", "background": "#f9f9ff", "tertiary-fixed": "#f9e287", "on-tertiary-fixed-variant": "#534600", "on-secondary-fixed-variant": "#005236", "tertiary": "#6e5e0d", "surface-variant": "#d9e3f7", "surface-container-high": "#dee9fd" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "space-sm": "0.5rem", "margin": "1rem", "space-xl": "2rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "space-md": "1rem", "gutter-desktop": "1.5rem", "margin-desktop": "2rem" }, "fontFamily": { "headline-lg": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "headline-md": ["Plus Jakarta Sans"], "caption": ["Inter"], "body-lg": ["Inter"], "label-pill": ["Inter"], "headline-hero": ["Plus Jakarta Sans"], "body-editorial": ["Inter"], "headline-sm": ["Plus Jakarta Sans"], "headline-hero-mobile": ["Plus Jakarta Sans"], "code": ["JetBrains Mono"] }, "fontSize": { "headline-lg": ["22px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "28px", "fontWeight": "700" }], "caption": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "28px", "letterSpacing": "0.03em", "fontWeight": "400" }], "label-pill": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-hero": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "body-editorial": ["14px", { "lineHeight": "26.6px", "letterSpacing": "0.5px", "fontWeight": "400" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-hero-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "800" }], "code": ["13px", { "lineHeight": "22px", "fontWeight": "400" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#f9f9ff;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-editorial text-on-surface flex flex-col min-h-screen antialiased selection:bg-secondary-container selection:text-on-secondary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex flex-col min-w-0 flex-1 pr-space-xs"><div class="flex items-center gap-space-xs"><span class="w-1.5 h-3.5 rounded-full bg-primary shrink-0"></span><h1 class="font-headline-sm text-headline-sm text-on-surface truncate">Markdown 杂志风 · 组件库全景规范（实战对齐版）</h1></div><p class="font-caption text-caption text-on-surface-variant truncate mt-0.5 tracking-wide">100% 对标实战版面 · 微信公众号零塌陷组件系统</p></div><div class="flex items-center gap-1 shrink-0"><button aria-label="搜索组件" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[20px]">search</span></button><div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center ml-1 shadow-sm shrink-0"><span class="material-symbols-outlined text-on-primary text-[16px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface mx-auto max-w-[677px] px-margin"><div class="flex flex-col w-full pb-10">
+<!-- Top Hero Header & Metrics Dashboard -->
+<header class="flex flex-col gap-space-sm my-space-md"><div class="flex items-center justify-between"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed/50 text-on-secondary-fixed font-label-pill text-label-pill shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>生产级全通规范 · v4.5</span><div class="flex items-center gap-1 text-on-surface-variant font-caption text-caption"><span class="material-symbols-outlined text-[16px] text-primary">verified</span><span>微信零外部样式依赖</span></div></div><div><h2 class="font-headline-hero-mobile text-headline-hero-mobile text-on-surface tracking-tight">Markdown 杂志风 UI 组件库</h2><p class="font-body-editorial text-body-editorial text-on-surface-variant mt-1">完整覆盖全量 Markdown 语法体系，提供工业级出版质感排版与微信防塌陷映射。</p></div><div class="grid grid-cols-3 gap-2 mt-1"><div class="flex flex-col p-2.5 rounded-lg bg-surface-container-lowest shadow-sm"><span class="font-caption text-caption text-on-surface-variant">语法映射</span><span class="font-headline-md text-headline-md text-primary mt-0.5">100% 通用</span></div><div class="flex flex-col p-2.5 rounded-lg bg-surface-container-lowest shadow-sm"><span class="font-caption text-caption text-on-surface-variant">基准宽度</span><span class="font-headline-md text-headline-md text-on-surface mt-0.5">677 px</span></div><div class="flex flex-col p-2.5 rounded-lg bg-surface-container-lowest shadow-sm"><span class="font-caption text-caption text-on-surface-variant">外部样式</span><span class="font-headline-md text-headline-md text-tertiary mt-0.5">0% 依赖</span></div></div><nav aria-label="组件分类过滤" class="flex items-center gap-2 overflow-x-auto py-1.5 no-scrollbar -mx-margin px-margin"><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-label-pill text-label-pill shadow-sm">全部组件</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">标题体系</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">目录索引</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">引用模块</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">正文与代码</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">列表与待办</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">表格与多媒体</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">技术扩展</button><button class="shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-pill text-label-pill">文末名片</button></nav></header>
+<!-- SECTION 01: 标题体系 (Headings) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 01: 标题体系</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Headings Architecture</span>
+</div>
+<!-- H1 顶刊大标题卡片 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium"># H1 顶刊封面大标题卡</span>
+<span class="font-caption text-caption text-on-surface-variant">文章总标题组件</span>
+</div>
+<!-- 实战 H1 组件复刻 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest border border-surface-container/60 shadow-sm flex flex-col">
+<div class="w-full h-1 bg-gradient-to-r from-primary via-secondary-fixed-dim to-surface-container-high"></div>
+<div class="p-4 sm:p-5 flex flex-col gap-3 relative">
+<div class="flex items-center justify-between">
+<span class="bg-secondary-fixed/50 text-on-secondary-fixed font-label-pill text-label-pill px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>深度排版实战
+      </span>
+<span class="font-caption text-caption text-outline">原创思考</span>
+</div>
+<div class="flex flex-col gap-1.5 pt-0.5">
+<h4 class="font-headline-hero-mobile text-headline-hero-mobile sm:font-headline-hero sm:text-[24px] text-primary tracking-tight font-extrabold leading-snug">
+        告别廉价感：卡片杂志风公众号深度排版美学
+      </h4>
+<p class="font-body-editorial text-body-editorial text-on-surface-variant font-medium">
+        Markdown 语法映射 · 视觉层级递进 · 微信富文本格式零塌陷规范
+      </p>
+</div>
+</div>
+</div>
+</article>
+<!-- H2 章节标题（三种实战版式） -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">## H2 章节标题 · 三种探索版式</span>
+<span class="font-caption text-caption text-on-surface-variant">墨规 / 浮光 / 素墨 三款雅致版型</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- 版式 A · 立体标尺微标款 (SCREEN_21) -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-surface-container/60 flex flex-col gap-2">
+<div class="flex items-center justify-between pb-1">
+<span class="font-code text-[11px] text-primary font-semibold">版式 A · 墨规 (立体标尺款)</span>
+<span class="font-caption text-[11px] text-outline">SCREEN_21 对标</span>
+</div>
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex items-center gap-3">
+<div class="relative shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-[#e6f4ea] border border-[#a3e0be]/50 shadow-[0_2px_6px_rgba(0,108,73,0.08)]">
+<span class="font-code text-[18px] font-extrabold text-[#047857] tracking-tight leading-none">01</span>
+<div class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-primary rounded-full"></div>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<h5 class="font-headline-lg text-[18px] sm:text-headline-lg text-on-surface font-extrabold tracking-tight leading-tight">
+          为什么之前的排版总觉得“廉价”？
+        </h5>
+<p class="font-caption text-caption text-outline mt-0.5">视觉杂乱与套版依赖的根源反思</p>
+</div>
+</div>
+<div class="relative flex items-center w-full h-[3px] bg-surface-container-high/50 rounded-full overflow-hidden mt-1">
+<div class="w-12 h-full bg-primary rounded-full"></div>
+<div class="w-2 h-full bg-secondary-fixed-dim ml-1 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- 版式 B · 巨幅透叠数字款 (SCREEN_19) -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-surface-container/60 flex flex-col gap-2">
+<div class="flex items-center justify-between pb-1">
+<span class="font-code text-[11px] text-primary font-semibold">版式 B · 浮光 (透叠数字款)</span>
+<span class="font-caption text-[11px] text-outline">SCREEN_19 对标</span>
+</div>
+<div class="relative pt-3 pb-1 flex flex-col justify-end overflow-hidden">
+<div class="absolute -top-3 left-0 select-none pointer-events-none font-headline-hero text-[58px] font-extrabold text-primary/[0.09] leading-none tracking-tighter" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+      02
+    </div>
+<div class="relative z-10 flex items-center gap-3">
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-caption text-[11px] tracking-wider text-primary font-bold">第二章 · 语法映射</span>
+</div>
+<div class="flex-1 h-[1px] bg-gradient-to-r from-primary/30 via-outline-variant/40 to-transparent"></div>
+</div>
+<div class="relative z-10 mt-1 flex flex-col gap-0.5">
+<h5 class="font-headline-lg text-[18px] text-on-surface font-extrabold tracking-tight">
+        Markdown 到公众号组件的深度映射
+      </h5>
+<p class="font-caption text-caption text-outline">建立克制严密的内联格式对应关系</p>
+</div>
+</div>
+</div>
+<!-- 版式 C · 竖线重音纯净款 (SCREEN_23) -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-surface-container/60 flex flex-col gap-2">
+<div class="flex items-center justify-between pb-1">
+<span class="font-code text-[11px] text-primary font-semibold">版式 C · 素墨 (克制留白款)</span>
+<span class="font-caption text-[11px] text-outline">SCREEN_23 对标</span>
+</div>
+<div class="flex items-start gap-3 pt-2 pb-1 border-b border-surface-container-high/60">
+<div class="w-1.5 h-6 bg-primary rounded-full shrink-0 mt-0.5"></div>
+<div class="flex flex-col gap-0.5 flex-1 min-w-0">
+<h5 class="font-headline-lg text-[18px] text-on-surface font-extrabold tracking-tight">克制与留白：高级感的真正来源</h5>
+<p class="font-caption text-caption text-outline">编辑部手记 · 总结反思</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+<!-- H3 模块小标题（步骤卡片标） -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">### H3 模块步骤小标题</span>
+<span class="font-caption text-caption text-on-surface-variant">带实心圆角数字步骤</span>
+</div>
+<div class="flex items-center gap-3 bg-secondary-container/40 p-3.5 rounded-xl border border-secondary-container/60">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[13px] shrink-0">1</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-[14px] font-bold text-on-secondary-container">从原始 Markdown 提炼层级语义</span>
+<span class="font-caption text-caption text-on-surface-variant">将无修饰的抽象标签，转化为带有物理纸张厚度的自解释排版卡片</span>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 02: 目录导航 (TOC / Catalog) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 02: 目录导航索引</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">TOC Navigation</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">TOC 横向滑块导读大卡</span>
+<span class="font-caption text-caption text-on-surface-variant">最佳实战验证组件</span>
+</div>
+<!-- 实战横向大卡复刻 -->
+<nav aria-label="文章目录示例" class="bg-surface-container-low/70 rounded-xl p-3.5 sm:p-4 flex flex-col gap-3 border border-surface-container/60">
+<div class="flex items-center justify-between pb-2 border-b border-surface-container-high/50">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-3.5 rounded-full bg-primary"></span>
+<span class="font-headline-sm text-[14px] text-on-surface font-bold tracking-tight">文章导读与章节索引</span>
+</div>
+<span class="font-caption text-[11px] text-outline">横滑浏览</span>
+</div>
+<div class="flex flex-row overflow-x-auto gap-3 pb-2 pt-1 select-none" style="scrollbar-width: none; scroll-snap-type: x mandatory;">
+<div class="group flex flex-col justify-between p-3.5 rounded-xl bg-surface-container-lowest border border-surface-container/70 shadow-xs shrink-0" style="width: 240px; min-width: 240px; flex: 0 0 240px; scroll-snap-align: start;">
+<div class="flex items-center justify-between pb-2">
+<span class="font-code text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">一、诊断反思</span>
+<span class="material-symbols-outlined text-[16px] text-outline">arrow_forward</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-body-sm text-[14px] font-bold text-on-surface leading-snug">为什么觉得“廉价”？</span>
+<p class="font-caption text-[11px] text-on-surface-variant leading-relaxed pt-1 border-t border-surface-container-high/40 mt-1 line-clamp-2">分析过度装饰与混乱步调带来的视觉疲劳</p>
+</div>
+</div>
+<div class="group flex flex-col justify-between p-3.5 rounded-xl bg-surface-container-lowest border border-surface-container/70 shadow-xs shrink-0" style="width: 240px; min-width: 240px; flex: 0 0 240px; scroll-snap-align: start;">
+<div class="flex items-center justify-between pb-2">
+<span class="font-code text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">二、组件映射</span>
+<span class="material-symbols-outlined text-[16px] text-outline">arrow_forward</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-body-sm text-[14px] font-bold text-on-surface leading-snug">Markdown 深度映射</span>
+<p class="font-caption text-[11px] text-on-surface-variant leading-relaxed pt-1 border-t border-surface-container-high/40 mt-1 line-clamp-2">从抽象语法标签到原生纸质卡片组件</p>
+</div>
+</div>
+</div>
+</nav>
+</article>
+</section>
+<!-- SECTION 03: 引用模块 (Blockquotes) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 03: 引用与高光沉思</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Editorial Quotes</span>
+</div>
+<!-- 双线微绿一句话沉思卡 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">&gt; 双线微绿一句话沉思卡</span>
+<span class="font-caption text-caption text-on-surface-variant">带双向引号与出处</span>
+</div>
+<div class="relative bg-surface-container-low rounded-xl p-4 sm:p-5 shadow-sm overflow-hidden border border-surface-container/60">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary rounded-l-xl"></div>
+<div class="flex gap-2.5">
+<span class="font-headline-hero text-primary/30 leading-none select-none text-[32px] -mt-2">“</span>
+<div class="flex flex-col gap-1.5 flex-1">
+<p class="font-body-editorial text-body-editorial text-on-surface font-medium leading-relaxed">
+        排版设计的终极目的不是装饰，而是为内容赋能；排版不是给文字穿上花哨的外衣，而是为思想建造一座<span class="bg-secondary-fixed/50 px-1 py-0.5 rounded text-on-secondary-fixed font-semibold">有呼吸的宅邸</span>。
+      </p>
+<span class="font-caption text-caption text-outline self-end tracking-wider">—— 编者序</span>
+</div>
+<span class="font-headline-hero text-primary/30 leading-none select-none text-[32px] self-end -mb-4">”</span>
+</div>
+</div>
+</article>
+<!-- 强调金句卡 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">::: quote 强调金句卡</span>
+<span class="font-caption text-caption text-on-surface-variant">带色彩微图标与气泡引用</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-3 border border-surface-container/60">
+<span class="material-symbols-outlined text-primary text-[28px] shrink-0">palette</span>
+<p class="font-headline-sm text-headline-sm text-on-surface font-bold leading-normal">
+    “主色全文 ≤ 5 处，90% 文字交给中性灰阶承重。”
+  </p>
+</div>
+</article>
+</section>
+<!-- SECTION 04: 正文段落与行内语法标记 -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 04: 正文段落与行内语法标记</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Inline Typography</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">正文规范与行内微标</span>
+<span class="font-caption text-caption text-on-surface-variant">加粗 / 荧光笔 / 行内代码</span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 font-body-editorial text-body-editorial leading-loose text-on-surface border border-surface-container/60">
+<p>
+    真正具有出版级别质感的杂志版面，永远在极力追求克制与工整。我们需要建立严密的<span class="bg-secondary-fixed/50 px-1.5 py-0.5 rounded text-on-secondary-fixed font-semibold">保持单行节奏的一致性</span>，并通过精准的<span class="text-primary font-bold">灰阶主次承重系统</span>来引导视觉重力。
+  </p>
+<div class="pt-2 border-t border-surface-container-high/50 flex flex-wrap items-center gap-2">
+<span class="text-caption text-on-surface-variant">行内标记演示：</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-medium text-[12px]">高饱和度重点</span>
+<span class="px-1.5 py-0.5 rounded bg-secondary-fixed/50 text-on-secondary-fixed font-semibold text-[12px]">微绿荧光笔高亮</span>
+<code class="px-2 py-0.5 rounded bg-surface-container-highest text-primary font-code text-[11px]">&lt;span leaf=""&gt;</code>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 05: 极客代码块 (Code Block) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 05: 极客代码视窗</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Code Block Architecture</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">```js macOS 代码视窗</span>
+<span class="font-caption text-caption text-on-surface-variant">红黄绿点 · 行号侧栏</span>
+</div>
+<div class="rounded-xl overflow-hidden bg-inverse-surface text-inverse-on-surface shadow-md">
+<!-- 视窗标题栏与 macOS 三色交通灯 -->
+<div class="bg-on-surface/90 px-4 py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="ml-2 font-code text-[11px] text-surface-container-high/80">editorial-parser.js</span>
+</div>
+<span class="font-code text-[11px] text-surface-container-high/50">JavaScript</span>
+</div>
+<!-- 代码主体 (带行号侧栏) -->
+<div class="p-4 font-code text-code flex gap-4 overflow-x-auto">
+<div class="flex flex-col text-surface-container-high/30 select-none text-right shrink-0">
+<span>01</span>
+<span>02</span>
+<span>03</span>
+<span>04</span>
+<span>05</span>
+</div>
+<pre class="flex flex-col text-surface-container leading-relaxed"><code><span class="text-tertiary-fixed font-medium">const</span> themeEngine = <span class="text-primary-fixed-dim">require</span>(<span class="text-secondary-fixed">'gzh-design-skill'</span>);
+<span class="text-outline-variant font-medium">// 映射 Markdown 语法树为原生内联卡片容器</span>
+<span class="text-tertiary-fixed font-medium">const</span> cardSpec = themeEngine.<span class="text-primary-fixed-dim">compile</span>(markdownSource, {
+  <span class="text-primary-fixed">theme</span>: <span class="text-secondary-fixed">'moyu-emerald'</span>,
+  <span class="text-primary-fixed">inlineSafe</span>: <span class="text-tertiary-fixed">true</span>
+});</code></pre>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 06: 警告提示与语法映射框 (Callouts) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 06: 警告提示与语法映射</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Admonition Boxes</span>
+</div>
+<!-- 暖黄细线避坑警示框 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">::: warning 暖黄细线避坑警示框</span>
+<span class="font-caption text-caption text-on-surface-variant">微信净化机制避坑说明</span>
+</div>
+<div class="relative bg-surface-container-low rounded-xl p-4 sm:p-5 shadow-sm overflow-hidden flex flex-col gap-2 border border-surface-container/60">
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-tertiary-container via-secondary-container to-tertiary-container opacity-80"></div>
+<div class="flex items-center gap-2 pt-1">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-tertiary-container font-bold">避坑指南：微信富文本净化机制</span>
+</div>
+<p class="font-body-editorial text-body-editorial text-on-surface-variant leading-relaxed pl-8">
+    微信原生富文本编辑器会强行剥离 <code class="font-code text-[12px] bg-surface-container-highest px-1 py-0.5 rounded text-error">&lt;style&gt;</code> 样式块与外部 WebFont 字体。所有出版组件必须内嵌严格的内联 style 属性并利用 <code class="font-code text-[12px] bg-surface-container-highest px-1 py-0.5 rounded text-primary">&lt;span leaf=""&gt;</code> 标签封存格式，杜绝微信格式塌陷。
+  </p>
+</div>
+</article>
+<!-- 紧凑型常用语法映射对照卡 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">常用语法映射对照卡片</span>
+<span class="font-caption text-caption text-on-surface-variant">规范对照展台</span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2 border border-surface-container/50">
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center justify-between gap-2 shadow-xs">
+<div class="flex items-center gap-2">
+<span class="font-code text-body-sm font-semibold bg-surface-container-highest px-2 py-0.5 rounded text-primary">Blockquote</span>
+<span class="material-symbols-outlined text-[16px] text-outline">arrow_right_alt</span>
+<span class="font-body-sm text-body-sm font-bold text-on-surface">双线微绿一句话卡</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">思想驻足点</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center justify-between gap-2 shadow-xs">
+<div class="flex items-center gap-2">
+<span class="font-code text-body-sm font-semibold bg-surface-container-highest px-2 py-0.5 rounded text-primary">## H2</span>
+<span class="material-symbols-outlined text-[16px] text-outline">arrow_right_alt</span>
+<span class="font-body-sm text-body-sm font-bold text-on-surface">数字标尺 / 透叠版式</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">章节结构轴</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest flex items-center justify-between gap-2 shadow-xs">
+<div class="flex items-center gap-2">
+<span class="font-code text-body-sm font-semibold bg-surface-container-highest px-2 py-0.5 rounded text-primary">::: warning</span>
+<span class="material-symbols-outlined text-[16px] text-outline">arrow_right_alt</span>
+<span class="font-body-sm text-body-sm font-bold text-on-surface">暖黄 1px 细线警示框</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">高效防错</span>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 07: 01/02/03 灰阶微标分步卡片 (Lists & Cards) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 07: 灰阶微标分步卡片</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Metric Step Cards</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">01/02/03 极简分步诊断卡组</span>
+<span class="font-caption text-caption text-on-surface-variant">灰白底衬与右上微标</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<!-- 01 过度装饰 -->
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-1.5 border border-surface-container/50">
+<div class="flex items-center justify-between pb-1">
+<span class="font-headline-sm text-[14px] font-bold text-on-surface">过度装饰</span>
+<span class="font-code text-[11px] text-outline font-semibold">01</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+      动态边框与高光遮蔽了文字思考的纯粹锋芒，导致读者极易产生审美疲劳。
+    </p>
+</div>
+<!-- 02 结构混乱 -->
+<div class="bg-surface-container-low rounded-xl p-4 flex flex-col gap-1.5 border border-surface-container/50">
+<div class="flex items-center justify-between pb-1">
+<span class="font-headline-sm text-[14px] font-bold text-on-surface">结构混乱</span>
+<span class="font-code text-[11px] text-outline font-semibold">02</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+      缺乏统一的字号比例尺与段落行高步调，各级标题跳跃无常，无法建立稳固心智。
+    </p>
+</div>
+<!-- 03 格式塌陷 -->
+<div class="bg-surface-container-low rounded-xl p-4 flex flex-col gap-1.5 border border-surface-container/50">
+<div class="flex items-center justify-between pb-1">
+<span class="font-headline-sm text-[14px] font-bold text-on-surface">格式塌陷</span>
+<span class="font-code text-[11px] text-error font-semibold">03</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+      外部样式未经编译直接贴入后台导致被强行剥离，手机端瞬间失真变形。
+    </p>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 08: 尾部沉静墨绿名片与阅读互动 -->
+<!-- SECTION 08: 列表与待办任务体系规范 (Lists & Tasks) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 08: 列表与待办体系</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Lists &amp; Tasks Architecture</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60 gap-4">
+<div class="flex items-center justify-between pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">- ul / 1. ol / - [x] task</span>
+<span class="font-caption text-caption text-on-surface-variant">三种清单微排版</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<!-- 无序列表 -->
+<div class="bg-surface-container-low/70 rounded-xl p-3.5 flex flex-col gap-2.5 border border-surface-container/60">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container-high/40">
+<span class="font-code text-[11px] text-primary font-semibold">无序列表 (- / *)</span>
+<span class="font-caption text-[11px] text-outline">翡翠微方标</span>
+</div>
+<ul class="flex flex-col gap-2 text-body-sm text-on-surface pt-1">
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+<span>克制正文行间距，确保阅读呼吸流畅</span>
+</li>
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+<span>内嵌单行色彩锚点，突出语义重音</span>
+</li>
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+<span>多级嵌套层级递进 1.25rem 物理内边距</span>
+</li>
+</ul>
+</div>
+<!-- 有序列表 -->
+<div class="bg-surface-container-low/70 rounded-xl p-3.5 flex flex-col gap-2.5 border border-surface-container/60">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container-high/40">
+<span class="font-code text-[11px] text-primary font-semibold">有序列表 (1. / 2.)</span>
+<span class="font-caption text-[11px] text-outline">浅绿数字标</span>
+</div>
+<ol class="flex flex-col gap-2 text-body-sm text-on-surface pt-1">
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-4 h-4 rounded bg-[#e6f4ea] text-primary font-code text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">01</span>
+<span>解析 AST 语义树节点关系</span>
+</li>
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-4 h-4 rounded bg-[#e6f4ea] text-primary font-code text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">02</span>
+<span>内联 style 属性强制注水</span>
+</li>
+<li class="flex items-start gap-2 leading-relaxed">
+<span class="w-4 h-4 rounded bg-[#e6f4ea] text-primary font-code text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">03</span>
+<span>通过剪切板无损写入富文本</span>
+</li>
+</ol>
+</div>
+<!-- 任务代办列表 -->
+<div class="bg-surface-container-low/70 rounded-xl p-3.5 flex flex-col gap-2.5 border border-surface-container/60">
+<div class="flex items-center justify-between pb-1 border-b border-surface-container-high/40">
+<span class="font-code text-[11px] text-primary font-semibold">任务清单 (- [x])</span>
+<span class="font-caption text-[11px] text-outline">原生复选态</span>
+</div>
+<div class="flex flex-col gap-2 text-body-sm text-on-surface pt-1">
+<div class="flex items-start gap-2 leading-relaxed text-outline">
+<span class="w-4 h-4 rounded bg-primary text-on-primary flex items-center justify-center text-[12px] shrink-0 mt-0.5"><span class="material-symbols-outlined text-[13px]">check</span></span>
+<span style="text-decoration: line-through;">根除外部 CSS 依赖与类选择器</span>
+</div>
+<div class="flex items-start gap-2 leading-relaxed text-outline">
+<span class="w-4 h-4 rounded bg-primary text-on-primary flex items-center justify-center text-[12px] shrink-0 mt-0.5"><span class="material-symbols-outlined text-[13px]">check</span></span>
+<span style="text-decoration: line-through;">封装 677px 微信黄金安全基准</span>
+</div>
+<div class="flex items-start gap-2 leading-relaxed">
+<span class="w-4 h-4 rounded border border-outline/50 bg-surface-container-lowest shrink-0 mt-0.5"></span>
+<span class="font-medium">发布生产级编译自动化插件</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- SECTION 09: 杂志风数据表格规范 (Data Tables) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 09: 杂志风数据表格</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Data Tables Architecture</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">| 语法对比 | 实战表现 | 微信安全 |</span>
+<span class="font-caption text-caption text-on-surface-variant">防撑破水平滚动安全包裹</span>
+</div>
+<div class="w-full overflow-x-auto rounded-xl border border-surface-container/60 shadow-xs" style="-webkit-overflow-scrolling: touch;">
+<table class="w-full text-left font-body-sm" style="min-width: 520px; border-collapse: collapse;">
+<thead>
+<tr style="background: #064e3b; color: #ffffff;">
+<th class="py-2.5 px-3.5 font-headline-sm text-[12px] font-bold tracking-wide">语法规则</th>
+<th class="py-2.5 px-3.5 font-headline-sm text-[12px] font-bold tracking-wide">转换策略</th>
+<th class="py-2.5 px-3.5 font-headline-sm text-[12px] font-bold tracking-wide">微信富文本表现</th>
+<th class="py-2.5 px-3.5 font-headline-sm text-[12px] font-bold tracking-wide text-right">状态</th>
+</tr>
+</thead>
+<tbody class="text-[13px]">
+<tr class="border-b border-surface-container-high/40 hover:bg-surface-container-low transition-colors" style="background: #ffffff;">
+<td class="py-2.5 px-3.5 font-code text-primary font-semibold">table / th / td</td>
+<td class="py-2.5 px-3.5 text-on-surface">内联宽度与安全自适应包裹</td>
+<td class="py-2.5 px-3.5 text-on-surface-variant">横向流畅滑动，零折行溢出</td>
+<td class="py-2.5 px-3.5 text-right"><span class="px-1.5 py-0.5 rounded bg-[#e6f4ea] text-[#047857] text-[11px] font-bold">100% 兼容</span></td>
+</tr>
+<tr class="border-b border-surface-container-high/40 hover:bg-surface-container-low transition-colors" style="background: #f9f9ff;">
+<td class="py-2.5 px-3.5 font-code text-primary font-semibold">pre &gt; code</td>
+<td class="py-2.5 px-3.5 text-on-surface">macOS 胶囊顶栏 + 逐行染色</td>
+<td class="py-2.5 px-3.5 text-on-surface-variant">内联样式封存，不被过滤</td>
+<td class="py-2.5 px-3.5 text-right"><span class="px-1.5 py-0.5 rounded bg-[#e6f4ea] text-[#047857] text-[11px] font-bold">100% 兼容</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors" style="background: #ffffff;">
+<td class="py-2.5 px-3.5 font-code text-primary font-semibold">blockquote</td>
+<td class="py-2.5 px-3.5 text-on-surface">墨绿双引边饰 + 纸质厚度卡</td>
+<td class="py-2.5 px-3.5 text-on-surface-variant">微信多端无视距折叠</td>
+<td class="py-2.5 px-3.5 text-right"><span class="px-1.5 py-0.5 rounded bg-[#e6f4ea] text-[#047857] text-[11px] font-bold">100% 兼容</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</article>
+</section>
+<!-- SECTION 10: 多媒体与图注规范 (Media & Caption) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 10: 多媒体与图注规范</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Media &amp; Caption Architecture</span>
+</div>
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">![alt](url) 杂志相框图注卡</span>
+<span class="font-caption text-caption text-on-surface-variant">出版级画幅与斜体微标</span>
+</div>
+<figure class="flex flex-col rounded-xl overflow-hidden bg-surface-container-low/70 border border-surface-container/60 p-2.5 gap-2">
+<div class="relative rounded-lg overflow-hidden bg-surface-container-high flex items-center justify-center flex-col py-8 px-4 border border-surface-container/50" style="background: linear-gradient(135deg, #e6f4ea 0%, #dee9fd 100%);">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 shadow-xs">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<span class="font-headline-sm text-[13px] font-bold text-on-surface">出版画幅展示区域 · 16:9 物理黄金比例</span>
+<span class="font-caption text-[11px] text-on-surface-variant mt-0.5">自动挂载懒加载与高分辨率原图内嵌标记</span>
+</div>
+<figcaption class="flex items-center justify-center gap-1.5 text-center py-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+<span class="font-caption text-[12px] text-outline italic tracking-wide">图 1.1 · 杂志风卡片排版的视觉重心分布与留白节奏对照（摄影 / 原创制图）</span>
+</figcaption>
+</figure>
+</article>
+</section>
+<!-- SECTION 11: 技术扩展与外链处理 (Links, Footnotes, Separators & Details) -->
+<section class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 11: 扩展语法与外链处理</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Extended Markdown Specifications</span>
+</div>
+<!-- 微信外链直达卡 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">[title](url) 微信外链转换卡</span>
+<span class="font-caption text-caption text-on-surface-variant">杜绝微信链接失效</span>
+</div>
+<div class="flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low/80 border border-surface-container/70 shadow-xs">
+<div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
+<div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-[13px] font-bold text-on-surface truncate">GitHub · 微信排版极简编译脚本仓库</span>
+<span class="font-caption text-[11px] text-outline truncate">https://github.com/moyu/gzh-markdown-engine</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-pill text-[11px] font-semibold shrink-0 shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">content_copy</span>
+<span>长按复制</span>
+</button>
+</div>
+</article>
+<!-- 学术脚注与删除线/按键/极简分割线 -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60 gap-3">
+<div class="flex items-center justify-between pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">[^1] 脚注 / ~~del~~ / &lt;kbd&gt; / ---</span>
+<span class="font-caption text-caption text-on-surface-variant">内联细小语法映射</span>
+</div>
+<!-- 行内演示 -->
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2.5 font-body-editorial text-body-editorial text-on-surface border border-surface-container/60">
+<p class="leading-relaxed text-[13px]">
+排版设计不建议<span class="text-outline px-1" style="text-decoration: line-through;">堆砌大量动效与高光花边</span>，按键盘 <kbd class="px-1.5 py-0.5 rounded bg-surface-container-lowest border border-outline-variant/60 font-code text-[11px] shadow-xs text-on-surface font-semibold">⌘ + Shift + P</kbd> 触发样式归一化<sup class="font-code text-[11px] font-bold text-primary px-0.5">[^1]</sup>。
+</p>
+<!-- 杂志极简分割线 --- -->
+<div class="flex items-center justify-center gap-3 py-1 select-none">
+<div class="w-16 h-[1px] bg-gradient-to-r from-transparent to-outline-variant/60"></div>
+<span class="text-primary font-bold text-[14px] tracking-widest">· · ·</span>
+<div class="w-16 h-[1px] bg-gradient-to-l from-transparent to-outline-variant/60"></div>
+</div>
+<!-- 脚注内容卡 -->
+<div class="p-2.5 rounded-lg bg-surface-container-lowest border border-surface-container/60 flex items-start gap-2">
+<span class="font-code text-[11px] font-bold text-primary">[^1]</span>
+<span class="font-caption text-[11px] text-on-surface-variant">参考《出版物排版设计工程标准》第 4.2 章节：“论微观排版中的灰阶平衡”，2024 年修订版。</span>
+</div>
+</div>
+<!-- 折叠手风琴 <details><summary> -->
+<details class="group bg-surface-container-low/70 rounded-xl p-3 border border-surface-container/60">
+<summary class="flex items-center justify-between cursor-pointer list-none select-none font-headline-sm text-[13px] font-bold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-3.5 rounded-full bg-primary"></span>
+<span>&lt;details&gt; 微信兼容折叠展开面板</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-outline group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pt-2.5 mt-2 border-t border-surface-container-high/50 font-caption text-[12px] text-on-surface-variant leading-relaxed">
+在微信公众号编辑器中，通过预封装带有内联样式的原生 details 语义块，可以优雅承载长参考代码、推导公式或补充阅读，不破坏主干阅读心流。
+</div>
+</details>
+</article>
+</section><section class="flex flex-col gap-space-md mb-space-lg">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-5 rounded-full bg-primary"></span>
+<h3 class="font-headline-md text-headline-md text-on-surface">SECTION 12: 尾部压舱名片与原生互动</h3>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Signature &amp; Engagement</span>
+</div>
+<!-- 沉静墨绿压舱款文末名片组件 (DEEP EMERALD CLEAN) -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">::: author 沉静墨绿压舱款文末名片</span>
+<span class="font-caption text-caption text-on-surface-variant">选型 3 · 真实二维码</span>
+</div>
+<div class="select-none relative overflow-hidden" style="background-color: #062e24; border-radius: 16px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 16px;">
+<!-- 左侧主理人信息区域 -->
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0; padding-right: 16px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<div style="width: 32px; height: 32px; border-radius: 8px; background: #005137; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15);">
+        甲
+      </div>
+<span style="color: #ffffff; font-weight: 700; font-size: 16px; letter-spacing: -0.01em;">甲木 × 摸鱼小李</span>
+</div>
+<p style="color: #a7f3d0; font-size: 12px; line-height: 1.5; margin-top: 6px; margin-bottom: 8px;">
+      专注富文本工程规范与纸质卡片审美，杜绝廉价排版。
+    </p>
+<div style="color: #34d399; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+<span>●</span>
+<span>长按右侧二维码关注专栏</span>
+</div>
+</div>
+<!-- 右侧二维码展台托卡 -->
+<div style="background: #ffffff; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 88px; flex-shrink: 0;">
+<img alt="WeChat QR Code" src="https://lh3.googleusercontent.com/aida/ALJJyrB9Qq8AQQEkCFH_mfOVWxCQdCxCnYUsOeZXwJGAuss81-vTDZFcYFPNgeh1SkE0K7woA1ofosIkQw0D-0lZteBfUBt28VkKc6xhR54HQrorxTytoBNbx6VM7IYRPgLrvRe31DvNv31aV2eEX0e3Hv-IR4EOwDn9a4DG_KgMDMA3i6SaDaP82VbZ8grgRB9xyFwGQusX-am2MH2MmgIS3YazhDj4lAnjZ9f-jC05oqlc" style="width: 72px; height: 72px; object-fit: contain; display: block;">
+<span style="font-size: 11px; color: #064e3b; font-weight: bold; margin-top: 4px; text-align: center; display: block; line-height: 1;">扫码关注</span>
+</div>
+</div>
+</article>
+<!-- 文末微信原生互动微胶囊 (Engagement Bar) -->
+<article class="flex flex-col rounded-xl bg-surface-container-lowest p-4 shadow-sm border border-surface-container/60">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code text-code text-primary font-medium">::: engagement 文末原生互动微胶囊</span>
+<span class="font-caption text-caption text-on-surface-variant">点赞 · 在看 · 墨绿实心转发</span>
+</div>
+<section class="bg-surface-container-low rounded-2xl p-6 shadow-sm flex flex-col items-center gap-4 text-center border border-surface-container/60">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">thumb_up</span>
+</div>
+<div class="flex flex-col gap-1 max-w-[420px]">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">既然看到这里了</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+      如果觉得有用，随手点个赞、在看、转发三连吧。
+    </p>
+</div>
+<!-- 三连浮雕互动按钮组 -->
+<div class="flex items-center gap-3 pt-1 w-full justify-center">
+<!-- 点赞 -->
+<button class="flex-1 max-w-[110px] py-2.5 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-label-pill text-label-pill font-semibold shadow-sm hover:bg-surface-bright active:scale-95 transition-all flex items-center justify-center gap-1.5 group border border-surface-container/50">
+<span class="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">thumb_up</span>
+<span>点赞</span>
+</button>
+<!-- 在看 -->
+<button class="flex-1 max-w-[110px] py-2.5 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-label-pill text-label-pill font-semibold shadow-sm hover:bg-surface-bright active:scale-95 transition-all flex items-center justify-center gap-1.5 group border border-surface-container/50">
+<span class="material-symbols-outlined text-[18px] text-tertiary group-hover:scale-110 transition-transform">visibility</span>
+<span>在看</span>
+</button>
+<!-- 转发 (高饱和墨绿实心底) -->
+<button class="flex-1 max-w-[110px] py-2.5 px-3 rounded-xl bg-primary text-on-primary font-label-pill text-label-pill font-semibold shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5 group">
+<span class="material-symbols-outlined text-[18px] text-on-primary group-hover:scale-110 transition-transform">share</span>
+<span>转发</span>
+</button>
+</div>
+<span class="font-code text-[11px] text-outline tracking-widest pt-1">感谢阅读 · 原创排版设计分享</span>
+</section>
+</article>
+</section>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.03)]" data-active-classes="text-primary font-semibold"><div class="flex justify-around items-center h-16 max-w-[677px] mx-auto px-space-sm"><a aria-current="page" class="flex flex-col items-center justify-center gap-0.5 w-16 h-12 transition-colors text-primary font-semibold" data-path="markdown-杂志风-·-组件库全景规范" href="#"><span class="material-symbols-outlined text-[22px]">auto_stories</span><span class="font-caption text-[11px] leading-tight">组件全景</span></a><a class="flex flex-col items-center justify-center gap-0.5 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="editorial-tokens-排版体系" href="#"><span class="material-symbols-outlined text-[22px]">format_quote</span><span class="font-caption text-[11px] leading-tight">排版规范</span></a><a class="flex flex-col items-center justify-center gap-0.5 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="interactive-blocks-交互模块" href="#"><span class="material-symbols-outlined text-[22px]">widgets</span><span class="font-caption text-[11px] leading-tight">交互积木</span></a><a class="flex flex-col items-center justify-center gap-0.5 w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="wechat-social-尾部互动" href="#"><span class="material-symbols-outlined text-[22px]">thumb_up</span><span class="font-caption text-[11px] leading-tight">阅读互动</span></a></div></nav>
+
+<yd-mg-icon id="yd-mg-icon-host" style="position: fixed; z-index: 2147483647;"></yd-mg-icon><yd-mg-block-icon id="yd-mg-block-icon-host" class="notranslate" translate="no"></yd-mg-block-icon><yd-image-ocr id="yd-image-ocr-host" style="z-index: 2147483647;"></yd-image-ocr><yd-mg-huaci id="yd-mg-huaci-host" class="notranslate" translate="no" style="position: fixed; z-index: 2147483647;"></yd-mg-huaci><yd-floating-ball id="yd-floating-ball-host" class="notranslate" translate="no" style="border: 0px !important; display: block !important; height: 0px !important; inset: auto !important; margin: 0px !important; opacity: 1 !important; overflow: visible !important; padding: 0px !important; pointer-events: auto !important; position: fixed !important; transform: none !important; visibility: visible !important; width: 0px !important; z-index: 2147483647 !important;"></yd-floating-ball></body></html>

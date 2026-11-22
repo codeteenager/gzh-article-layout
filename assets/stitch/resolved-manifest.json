@@ -1,0 +1,44 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": 1
+  },
+  "capturedDate": "2026-11-21",
+  "method": "Isolated Chromium, Tailwind runtime from the original export; computed styles keyed by original tag/class/style/text. No generated widths recorded.",
+  "sources": {
+    "ruler": {
+      "ruler.html": "e5fabcee076a90d46b30ad9e9598ed550e8b9c0265c14d621faca90a92343f88",
+      "resolved-ruler.json": "a8ed3a1a0f7e2af7accf7d191b25c894a6eff79120e8a7179d9cde7c7fdaf47e",
+      "resolved-ruler.css": "e3ce84e1ab215d90e3e7ff3c2c93555ae9056c109dd3bf3f4253bfa103249708",
+      "resolved-ruler-desktop.json": "322a533a8642fdb55561714aa2a102600639d96d2f1853526778271f7a5232b3",
+      "resolved-ruler-desktop.css": "e3ce84e1ab215d90e3e7ff3c2c93555ae9056c109dd3bf3f4253bfa103249708"
+    },
+    "overprint": {
+      "overprint.html": "db4d47d2186c5d3a4eeb0a432d2b26061168efd2b4aeb3e3406624878ed064f7",
+      "resolved-overprint.json": "2d5b21d1688d5380d2057f6f5d3764b6513ba068c42f2123cc7c9c6b59605afb",
+      "resolved-overprint.css": "af00fd8e33bd9153876dd0c9c228eed8dd366b97a9245bc379f96f234a612655",
+      "resolved-overprint-desktop.json": "0d9519a3d9e544a9438cb3d15cb327238bc3d2b7ee8762f214530548ea6725bb",
+      "resolved-overprint-desktop.css": "af00fd8e33bd9153876dd0c9c228eed8dd366b97a9245bc379f96f234a612655"
+    },
+    "pure": {
+      "pure.html": "5c9535e82c31826b05b5d2fea70c2c7c3207b7ee041130136ccc16278bdb7bc1",
+      "resolved-pure.json": "5af941ef2cd8ae60a7e626172476e7f4dc7a6b515b0d2449c59837df488688a2",
+      "resolved-pure.css": "8eb6693f52e8e7eb182ed84ad5e4fef7334f457dc3779532570b354fc671f1c1",
+      "resolved-pure-desktop.json": "7700de4962f38c38258955f432f40708152bb63138c6dd7e0fa1baeeb90e249e",
+      "resolved-pure-desktop.css": "8eb6693f52e8e7eb182ed84ad5e4fef7334f457dc3779532570b354fc671f1c1"
+    },
+    "components": {
+      "components.html": "a041f7e74fe6df62ff0c8ca63206feee25cb8d3cfb3b7aff7f530cc1e775c543",
+      "resolved-components.json": "7ede40caebb7b94a7a232df5b3d9f1518bc461293bdb039f9889b25cc692afac",
+      "resolved-components.css": "336c9a13122d9d33ce2120a614a1024064979b21f48bb34ab4df6af8f475a045",
+      "resolved-components-desktop.json": "4ad50d9df5268fd3d23e408a29c38e17d7a13d0a433dee3b2b7f10bcfe524c3e",
+      "resolved-components-desktop.css": "336c9a13122d9d33ce2120a614a1024064979b21f48bb34ab4df6af8f475a045"
+    }
+  },
+  "comparisonDesktopViewport": {
+    "width": 677,
+    "height": 900,
+    "deviceScaleFactor": 1
+  }
+}

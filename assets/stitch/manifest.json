@@ -1,0 +1,51 @@
+{
+  "project": "projects/9891162362575619920",
+  "title": "Magazine Markdown Converter",
+  "screens": [
+    {
+      "id": "f10cde8d801640049759374401bf3a88",
+      "name": "projects/9891162362575619920/screens/f10cde8d801640049759374401bf3a88",
+      "title": "卡片杂志风 · 标题版式探索：立体标尺微标版",
+      "width": "780",
+      "height": "6838",
+      "source": "assets/stitch/ruler.html",
+      "sha256": "e5fabcee076a90d46b30ad9e9598ed550e8b9c0265c14d621faca90a92343f88"
+    },
+    {
+      "id": "7cdfe8c73077432ea801566c4f8e7d93",
+      "name": "projects/9891162362575619920/screens/7cdfe8c73077432ea801566c4f8e7d93",
+      "title": "Markdown 杂志风 · 通用全语法组件库规范 (完整版)",
+      "width": "780",
+      "height": "14734",
+      "source": "assets/stitch/components.html",
+      "sha256": "a041f7e74fe6df62ff0c8ca63206feee25cb8d3cfb3b7aff7f530cc1e775c543"
+    },
+    {
+      "id": "1dfb84765b1c4c639f60759770b96172",
+      "name": "projects/9891162362575619920/screens/1dfb84765b1c4c639f60759770b96172",
+      "title": "卡片杂志风 · 15款高定色系版式全景陈列馆",
+      "width": "2560",
+      "height": "7050",
+      "source": "assets/stitch/color-gallery.html",
+      "sha256": "7f2423b48915ebd0c2032fffd9c8359ab8d2cf96284a5a81ef889adf63f269d2"
+    },
+    {
+      "id": "4910934c6c7e4e6e830d2a23fe1cae9b",
+      "name": "projects/9891162362575619920/screens/4910934c6c7e4e6e830d2a23fe1cae9b",
+      "title": "卡片杂志风 · 标题版式探索：巨幅透叠数字版",
+      "width": "780",
+      "height": "6922",
+      "source": "assets/stitch/overprint.html",
+      "sha256": "db4d47d2186c5d3a4eeb0a432d2b26061168efd2b4aeb3e3406624878ed064f7"
+    },
+    {
+      "id": "daadbffbb5e1425b8298bc475eee3a69",
+      "name": "projects/9891162362575619920/screens/daadbffbb5e1425b8298bc475eee3a69",
+      "title": "卡片杂志风公众号排版 · 纯净无杂质版",
+      "width": "780",
+      "height": "6780",
+      "source": "assets/stitch/pure.html",
+      "sha256": "5c9535e82c31826b05b5d2fea70c2c7c3207b7ee041130136ccc16278bdb7bc1"
+    }
+  ]
+}

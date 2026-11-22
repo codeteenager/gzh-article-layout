@@ -1,0 +1,152 @@
+[
+  {
+    "id": "emerald",
+    "name": "墨规· 翡翠林木",
+    "primary": "#059669",
+    "accent": "#10B981",
+    "surface": "#F2FAF6",
+    "deep": "#062E24",
+    "scene": "技术深度长文、工程架构手记",
+    "layout": "ruler"
+  },
+  {
+    "id": "bamboo-teal",
+    "name": "浮光· 青竹晨露",
+    "primary": "#0D9488",
+    "accent": "#2DD4BF",
+    "surface": "#F0FDFA",
+    "deep": "#134E4A",
+    "scene": "商业特写、年度特刊、人物专访",
+    "layout": "overprint"
+  },
+  {
+    "id": "pine-green",
+    "name": "佩兰· 寒松冷柏",
+    "primary": "#2E5B4B",
+    "accent": "#5E8B79",
+    "surface": "#F4F7F5",
+    "deep": "#1A382E",
+    "scene": "古籍整理、文史哲考据、学人札记",
+    "layout": "pure"
+  },
+  {
+    "id": "mineral-blue",
+    "name": "沧浪· 群青深矿",
+    "primary": "#1D4ED8",
+    "accent": "#3B82F6",
+    "surface": "#F4F7FF",
+    "deep": "#0F172A",
+    "scene": "前沿 AI 报告、系统架构、硬核数码",
+    "layout": "ruler"
+  },
+  {
+    "id": "cerulean",
+    "name": "霁蓝· 雨过天晴",
+    "primary": "#0284C7",
+    "accent": "#38BDF8",
+    "surface": "#F0F9FF",
+    "deep": "#082F49",
+    "scene": "设计美学、用户体验、艺术展评",
+    "layout": "overprint"
+  },
+  {
+    "id": "abyssal-indigo",
+    "name": "黛渊· 极夜海墨",
+    "primary": "#312E81",
+    "accent": "#6366F1",
+    "surface": "#F5F5FF",
+    "deep": "#0F1026",
+    "scene": "宏观经济、深度研究报告、投研观察",
+    "layout": "pure"
+  },
+  {
+    "id": "vermilion-seal",
+    "name": "朱印· 藏书官印",
+    "primary": "#B91C1C",
+    "accent": "#EF4444",
+    "surface": "#FDF4F4",
+    "deep": "#450A0A",
+    "scene": "官方重磅公告、典藏特刊、大事记",
+    "layout": "ruler"
+  },
+  {
+    "id": "terracotta",
+    "name": "晚霞· 霜林落日",
+    "primary": "#C2410C",
+    "accent": "#F97316",
+    "surface": "#FFF7ED",
+    "deep": "#431407",
+    "scene": "品牌起源故事、手作匠人记、文化随笔",
+    "layout": "overprint"
+  },
+  {
+    "id": "burgundy",
+    "name": "绛华· 沉檀深绛",
+    "primary": "#881337",
+    "accent": "#E11D48",
+    "surface": "#FFF1F2",
+    "deep": "#320612",
+    "scene": "高奢品鉴、古典音乐策展、名著长评",
+    "layout": "pure"
+  },
+  {
+    "id": "amber-honey",
+    "name": "琥珀· 金石凝光",
+    "primary": "#D97706",
+    "accent": "#FBBF24",
+    "surface": "#FFFBEB",
+    "deep": "#451A03",
+    "scene": "个人创业手记、心智认知模型、周刊",
+    "layout": "ruler"
+  },
+  {
+    "id": "sandalwood",
+    "name": "古檀· 沉香木案",
+    "primary": "#854D0E",
+    "accent": "#CA8A04",
+    "surface": "#FEFCE8",
+    "deep": "#361C04",
+    "scene": "深度学术书评、思想史研究、哲学札记",
+    "layout": "overprint"
+  },
+  {
+    "id": "moss-clay",
+    "name": "苍苔· 阶前青痕",
+    "primary": "#4D7C0F",
+    "accent": "#65A30D",
+    "surface": "#F7FEE7",
+    "deep": "#1A2E05",
+    "scene": "建筑景观漫游、生态农耕生活、草木志",
+    "layout": "pure"
+  },
+  {
+    "id": "imperial-violet",
+    "name": "黛紫· 紫气东来",
+    "primary": "#7E22CE",
+    "accent": "#C084FC",
+    "surface": "#FAF5FF",
+    "deep": "#3B0764",
+    "scene": "先锋精神哲学、现代诗歌、艺术跨界",
+    "layout": "ruler"
+  },
+  {
+    "id": "monochrome-zen",
+    "name": "素墨· 宣纸淡烟",
+    "primary": "#27272A",
+    "accent": "#71717A",
+    "surface": "#F4F4F5",
+    "deep": "#18181B",
+    "scene": "黑白纪实摄影、冷峻严肃文学、极简诗集",
+    "layout": "overprint"
+  },
+  {
+    "id": "frost-slate",
+    "name": "暮雪· 寒江残雪",
+    "primary": "#475569",
+    "accent": "#94A3B8",
+    "surface": "#F8FAFC",
+    "deep": "#0F172A",
+    "scene": "北欧极简美学、空间建筑评论、留白随笔",
+    "layout": "pure"
+  }
+]

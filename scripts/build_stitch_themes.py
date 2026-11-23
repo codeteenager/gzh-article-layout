@@ -21,6 +21,160 @@ FONT = "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-se
 MONO = "'JetBrains Mono','SF Mono',Consolas,Monaco,monospace"
 
 
+def declarations(style):
+    """Split declarations without breaking quoted values, URLs or functions."""
+    parts, start, depth, quote, escaped = [], 0, 0, None, False
+    for i, char in enumerate(style):
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif quote:
+            if char == quote:
+                quote = None
+        elif char in "\"'":
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == ";" and depth == 0:
+            parts.append(style[start:i])
+            start = i + 1
+    parts.append(style[start:])
+    return [tuple(map(str.strip, part.split(":", 1)))
+            for part in parts if ":" in part]
+
+
+def compact_template_style(style):
+    pairs = declarations(style)
+    # Unknown/custom CSS is not rewritten: these optimizations target the built-in
+    # templates, not arbitrary cascading styles or important declarations.
+    if any("!important" in value or key.startswith("--") for key, value in pairs):
+        return style
+    props = dict(pairs)
+    for key, default in {
+        "opacity": "1", "box-shadow": "none", "align-items": "normal",
+        "justify-content": "normal", "gap": "normal",
+    }.items():
+        if props.get(key) == default:
+            del props[key]
+    # Transparent is the initial background, provided no shorthand sets a fill.
+    if props.get("background-color") in {"rgba(0,0,0,0.0)", "rgba(0,0,0,0)", "transparent"} and "background" not in props:
+        del props["background-color"]
+    display = props.get("display", "block")
+    if display not in {"flex", "inline-flex"}:
+        for key in ("flex-direction", "align-items", "justify-content"):
+            props.pop(key, None)
+    # flex:0 1 auto already supplies the same explicit flex-shrink.
+    if props.get("flex") == "0 1 auto" and props.get("flex-shrink") == "1":
+        del props["flex-shrink"]
+    sides = ("top", "right", "bottom", "left")
+    border_keys = [f"border-{side}-{suffix}" for side in sides
+                   for suffix in ("width", "style", "color")]
+    if all(key in props for key in border_keys) and not any(
+        key in props for key in ("border", "border-top", "border-right", "border-bottom", "border-left",
+                                 "border-width", "border-style", "border-color")
+    ):
+        values = {suffix: [props[f"border-{side}-{suffix}"] for side in sides]
+                  for suffix in ("width", "style", "color")}
+        if all(value in {"0", "0px"} for value in values["width"]):
+            for key in border_keys:
+                del props[key]
+            props["border"] = "0"
+        else:
+            for suffix, values in values.items():
+                for side in sides:
+                    del props[f"border-{side}-{suffix}"]
+                props["border-" + suffix] = short_box(values)
+    for base in ("padding", "margin"):
+        keys = [base + "-" + side for side in sides]
+        if all(key in props for key in keys):
+            values = [props.pop(key) for key in keys]
+            # Fully specified longhands override an earlier shorthand.
+            props.pop(base, None)
+            props[base] = short_box(values)
+    # Font-family lists may be formatted over multiple lines. No quote contents
+    # or code/text nodes are minified.
+    def min_value(key, value):
+        if key == "font-family":
+            value = re.sub(r"\s*,\s*", ",", value)
+            return value.strip()
+        return value
+    return ";".join(key + ":" + min_value(key, value) for key, value in props.items()) + ";"
+
+
+def short_box(values):
+    top, right, bottom, left = values
+    if right == left:
+        if top == bottom:
+            return top if top == right else top + " " + right
+        return " ".join((top, right, bottom))
+    return " ".join(values)
+
+
+class TemplateStyleCleaner(HTMLParser):
+    """Clean static template styles without inferring runtime inheritance."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.output = []
+
+    def handle_starttag(self, tag, attrs):
+        raw = self.get_starttag_text()
+        style = dict(attrs).get("style")
+        if style is not None:
+            raw = re.sub(r"\bstyle\s*=\s*(\"[^\"]*\"|'[^']*')",
+                         lambda _: 'style="' + html.escape(compact_template_style(style), quote=True) + '"',
+                         raw, count=1)
+        self.output.append(raw)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+    def handle_endtag(self, tag):
+        self.output.append("</" + tag + ">")
+
+    def handle_data(self, data):
+        self.output.append(data)
+
+    def handle_entityref(self, name):
+        self.output.append("&" + name + ";")
+
+    def handle_charref(self, name):
+        self.output.append("&#" + name + ";")
+
+    def handle_comment(self, data):
+        self.output.append("<!--" + data + "-->")
+
+
+def clean_template_styles(value):
+    # Protect complete SVG source, including formatting of closing tags.
+    fragments, ranges, depth, start = [], [], 0, None
+    for match in re.finditer(r"</?svg\b[^>]*>", value):
+        if match[0].startswith("</"):
+            depth -= 1
+            if depth == 0:
+                ranges.append((start, match.end()))
+        else:
+            if depth == 0:
+                start = match.start()
+            depth += 1
+    protected = value
+    for start, end in reversed(ranges):
+        index = len(fragments)
+        fragments.append(value[start:end])
+        protected = protected[:start] + f"<!--GZH_SVG_PRESERVE_{index}-->" + protected[end:]
+    parser = TemplateStyleCleaner()
+    parser.feed(protected)
+    parser.close()
+    # Only empty leaf nodes, never wrappers with meaningful typography/layout.
+    result = re.sub(r'<span leaf=""></span>', "", "".join(parser.output))
+    for index, fragment in enumerate(fragments):
+        result = result.replace(f"<!--GZH_SVG_PRESERVE_{index}-->", fragment)
+    return result
+
+
 class Node:
     def __init__(self, tag, attrs=(), children=None):
         self.tag = tag
@@ -597,8 +751,7 @@ def compile_templates(theme, nodes):
     for key in list(result):
         if key not in {"container", "paragraph", "code_row", "table_cell", "footnote", "divider", "list"} and not key.startswith(("toc_item", "unordered_item", "ordered_item", "task_item")):
             result[key] = '<section style="margin:0 0 24px;">' + result[key] + "</section>"
-    return result
-    return result
+    return {key: clean_template_styles(value) for key, value in result.items()}
 
 
 DISPLAY = {

@@ -7,7 +7,7 @@ import re
 import unittest
 from html.parser import HTMLParser
 
-from build_stitch_themes import Compiler, Node, compile_templates, extract_catalog, source_components
+from build_stitch_themes import clean_template_styles, compact_template_style, Compiler, Node, compile_templates, extract_catalog, source_components
 from render_stitch_article import Renderer
 from stitch_themes import ROOT, LAYOUTS, catalog, chapter, component, templates
 from validate_gzh_html import validate
@@ -170,7 +170,7 @@ class StitchTests(unittest.TestCase):
             self.assertIn("在看", text)
             self.assertIn("转发", text)
             self.assertNotIn("♡", text)
-            self.assertIn("padding-top:8px", value)
+            self.assertTrue("padding-top:8px" in value or "padding:8px 0px 0px;" in value)
             for icon in ("thumb_up", "visibility", "share"):
                 path = re.search(r'<path d="([^"]+)"', (ROOT/"assets/stitch/icons"/(icon+".svg")).read_text())[1]
                 self.assertIn(path, value)
@@ -226,6 +226,51 @@ class StitchTests(unittest.TestCase):
     def test_field_content_cannot_inject_placeholder(self):
         output = component("emerald", "step", number=1, title="{{subtitle}}", subtitle="REAL")
         self.assertIn("{{subtitle}}", Text(output).text())
+
+
+class TemplateStyleTests(unittest.TestCase):
+    def test_templates_keep_explicit_typography(self):
+        source = '<section style="color:red;font-size:14px;"><p style="color:red;font-size:14px;"><span leaf="">正文。</span></p></section>'
+        result = clean_template_styles(source)
+        self.assertEqual(result.count("color:red;"), 2)
+        self.assertEqual(result.count("font-size:14px;"), 2)
+
+    def test_renderer_only_assembles_templates(self):
+        import inspect
+        import render_stitch_article
+        self.assertNotIn("compact_html", inspect.getsource(render_stitch_article))
+
+    def test_content_code_and_svg_are_untouched(self):
+        svg = '<svg viewBox="0 0 1 1"><rect width="1" style="opacity:1;" /></svg>'
+        source = '<section style="color:red;font-size:14px;"><p style="color:red;font-size:14px;opacity:1;"><span leaf="">正文。</span><span leaf=""></span></p><span style="font-family:monospace;"><span leaf="">A  B\n&lt;code&gt; &amp; "x"</span></span>' + svg + '</section>'
+        result = clean_template_styles(source)
+        self.assertEqual(Text(source).text(), Text(result).text())
+        self.assertIn(svg, result)
+        self.assertNotIn('<span leaf=""></span>', result)
+        self.assertIn('A  B\n&lt;code&gt; &amp; "x"', result)
+        self.assertEqual(validate(result)[:2], ([], []))
+        self.assertEqual(clean_template_styles(result), result)
+
+    def test_box_shorthands(self):
+        style = "padding-top:8px;padding-right:0px;padding-bottom:0px;padding-left:0px;"
+        self.assertEqual(compact_template_style(style), "padding:8px 0px 0px;")
+
+    def test_shorthand_override_not_erased(self):
+        style = "".join(f"border-{side}-{kind}:{value};" for side in ("top", "right", "bottom", "left")
+                        for kind, value in (("width", "0px"), ("style", "solid"), ("color", "red")))
+        style += "border-left:6px solid green;"
+        self.assertIn("border-left:6px solid green;", compact_template_style(style))
+        self.assertNotIn("border:0;", compact_template_style(style))
+
+    def test_table_retains_inheritance_boundary(self):
+        result = clean_template_styles('<section style="color:red;line-height:24px;"><table style="color:red;line-height:24px;"><tr><td>text</td></tr></table></section>')
+        self.assertIn('<table style="color:red;line-height:24px;">', result)
+
+    def test_css_strings_and_important_not_broken(self):
+        style = 'background:url("a;b.png");font-family:"A;B",sans-serif;'
+        self.assertIn('a;b.png', compact_template_style(style))
+        important = "color:red!important;color:blue;"
+        self.assertEqual(compact_template_style(important), important)
 
 
 if __name__ == "__main__":

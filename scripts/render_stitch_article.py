@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 
 from stitch_themes import (LAYOUTS, catalog, chapter, component, theme_by_id,
-                          declarations, escape_style_attribute)
+                          declarations, escape_style_attribute, merge_text_leaf_spans)
 from validate_gzh_html import validate
 
 
@@ -126,12 +126,15 @@ class Renderer:
                 out.append('<span style="%s;">%s</span>' % (style, self.inline(m[15])))
             pos = m.end()
         out.append(leaf(chinese_punctuation(text[pos:])))
-        return "".join(out)
+        # Do not emit empty scanner fragments around markup. Once slots contain
+        # real text, a styled span can itself be the leaf (unless it owns layout).
+        return merge_text_leaf_spans(
+            "".join(out).replace('<span leaf=""></span>', ""))
 
     def paragraph(self, text):
         return self.c("paragraph", body_html=self.inline(text))
 
-    def code(self, code, info):
+    def code(self, code, info, in_article=False):
         lines = code.splitlines()
         if not lines:
             lines = [""]
@@ -140,10 +143,12 @@ class Renderer:
             line = line.expandtabs(4)
             # NBSPs preserve indentation and repeated spaces without white-space:pre.
             line = line.replace(" ", "\u00a0")
-            rows.append(self.c("code_row_in_frame", number=str(i).zfill(2), line=line or "\u00a0"))
-        return self.c("code", filename=info or "CODE", language=info, rows_html="".join(rows))
+            rows.append(self.c("code_row_in_rows" if in_article else "code_row_in_frame",
+                               number=str(i).zfill(2), line=line or "\u00a0"))
+        return self.c("code_with_rows" if in_article else "code", _in_article=in_article,
+                      filename=info or "CODE", language=info, rows_html="".join(rows))
 
-    def list_block(self, lines):
+    def list_block(self, lines, in_article=False):
         """Keep nesting/continuations in the same semantic list item."""
         item_rx = re.compile(r"^(\s*)(?:([-+*])|(\d+)[.)])\s+(?:\[([ xX])\]\s+)?(.*)$")
         items, index = [], 0
@@ -172,7 +177,7 @@ class Renderer:
             else:
                 item = self.c("unordered_item_in_list", body_html=inner)
             items.append(item)
-        return self.c("list_with_items", items_html="".join(items))
+        return self.c("list_with_items", _in_article=in_article, items_html="".join(items))
 
     @staticmethod
     def table_cells(line):
@@ -204,7 +209,7 @@ class Renderer:
                     i += 1
                 if i == len(lines):
                     raise ValueError("代码围栏未闭合")
-                out.append(self.code("\n".join(code), info.strip()))
+                out.append(self.code("\n".join(code), info.strip(), in_article=prose_cards))
                 i += 1
                 continue
             heading = re.match(r"^(#{1,6})\s+(.+?)(?:\s+#+)?$", line)
@@ -220,11 +225,11 @@ class Renderer:
                                        in_article=prose_cards))
                 else:
                     self.step_no += 1
-                    out.append(self.c("step", number=self.step_no, title=title, subtitle=""))
+                    out.append(self.c("step", _in_article=prose_cards, number=self.step_no, title=title, subtitle=""))
                 i += 1
                 continue
             if re.match(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$", line):
-                out.append(self.c("divider"))
+                out.append(self.c("divider", _in_article=prose_cards))
                 i += 1
                 continue
             if line.startswith(">"):
@@ -294,12 +299,12 @@ class Renderer:
                             value = value.replace("padding:10px", "background:" + self.theme["surface"] + ";font-weight:700;padding:10px")
                         cells.append(value)
                     rendered.append("<tr>" + "".join(cells) + "</tr>")
-                out.append(self.c("table", rows_html="".join(rendered)))
+                out.append(self.c("table", _in_article=prose_cards, rows_html="".join(rendered)))
                 continue
             image = re.fullmatch(r"\s*!\[([^\]]*)\]\((.+?)\)\s*", line)
             if image:
                 caption = image[1] + (" · GIF 动图" if image[1] and ".gif" in image[2].lower() else "")
-                value = self.c("image", url=safe_url(image[2]), alt=image[1], caption=caption)
+                value = self.c("image", _in_article=prose_cards, url=safe_url(image[2]), alt=image[1], caption=caption)
                 if not image[1]:
                     value = re.sub(r"<figcaption\b.*?</figcaption>", "", value, flags=re.S)
                 out.append(value)
@@ -313,7 +318,7 @@ class Renderer:
                 ):
                     listing.append(lines[i])
                     i += 1
-                out.append(self.list_block(listing))
+                out.append(self.list_block(listing, in_article=prose_cards))
                 continue
             foot = re.match(r"^\[\^([^\]]+)\]:\s*(.*)$", line)
             if foot:
@@ -343,6 +348,11 @@ class Renderer:
             def card(match):
                 inner = match[0].replace("<!--prose-->", "").replace("<!--/prose-->", "")
                 inner = inherit_paragraphs(inner)
+                single = re.fullmatch(r'<p style="margin:0;">((?:(?!</?p\b).)*)</p>',
+                                      inner, flags=re.S)
+                if single:
+                    return self.c("prose_card_single", _in_article=True,
+                                  body_html=single[1])
                 return self.c("prose_card", _in_article=True, body_html=inner)
             result = re.sub(r"(?:<!--prose-->.*?<!--/prose-->)+", card, result, flags=re.S)
         return result
@@ -404,7 +414,7 @@ class Renderer:
             footer = self.c("signature_no_qr_" + self.layout, _in_article=True, **fields)
         notes = "".join(self.c("footnote", _in_article=True, number="[^" + n + "]", body_html=self.inline(text))
                         for n, text in self.footnotes.items())
-        result = self.c("container", body_html=cover + toc + content + notes + footer +
+        result = self.c("container", _in_article=True, body_html=cover + toc + content + notes + footer +
                         self.c("engagement", _in_article=True, message=chinese_punctuation(self.footer_message)))
         errors, warnings, _ = validate(result)
         if errors or warnings:

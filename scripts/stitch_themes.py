@@ -42,6 +42,32 @@ def escape_style_attribute(value):
     return html.escape(value, quote=False).replace('"', "&quot;")
 
 
+def merge_text_leaf_spans(value):
+    """Fuse only an ordinary span and its sole, unstyled text leaf.
+
+    Call on assembled inline markup or static templates, never across block
+    component boundaries. Flex/grid leaves remain separate layout items.
+    """
+    pattern = re.compile(r'<span(?P<attrs>\s[^<>]*?)?>'
+                         r'<span leaf="">(?P<text>[^<>]*)</span></span>')
+
+    def merge(match):
+        attrs = match["attrs"] or ""
+        style = re.search(r'\bstyle="([^"]*)"', attrs)
+        props = dict(declarations(html.unescape(style[1]))) if style else {}
+        if (props.get("display") in {"flex", "inline-flex", "grid", "inline-grid",
+                                     "contents"} or
+                re.search(r"\bleaf\s*=", attrs)):
+            return match[0]
+        return '<span leaf=""' + attrs + '>' + match["text"] + '</span>'
+
+    while True:
+        optimized = pattern.sub(merge, value)
+        if optimized == value:
+            return value
+        value = optimized
+
+
 @lru_cache(maxsize=1)
 def catalog():
     return json.loads((ROOT / "assets/stitch/themes.json").read_text(encoding="utf-8"))

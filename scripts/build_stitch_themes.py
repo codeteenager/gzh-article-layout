@@ -13,7 +13,8 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
-from stitch_themes import ROOT, LAYOUT_NAMES, declarations, escape_style_attribute
+from stitch_themes import (ROOT, LAYOUT_NAMES, declarations, escape_style_attribute,
+                           merge_text_leaf_spans)
 
 SOURCE = ROOT / "assets/stitch"
 VOID = {"img", "br", "hr", "meta", "link", "input"}
@@ -266,6 +267,143 @@ def short_box(values):
     return " ".join(values)
 
 
+def allocate_template_fonts(value, property_name="font-family"):
+    """Allocate independent inherited typography before slot fill.
+
+    Dynamic slots and inline/native elements are observation points: their exact
+    original font property must survive. Only inert block ancestors may change it.
+    Unknown inherited fonts are symbolic, never guessed from a local machine.
+    SVG and native font boundaries remain opaque.
+    """
+    if property_name not in {"font-family", "font-weight", "font-style",
+                             "letter-spacing", "color"}:
+        raise ValueError("Only independent inherited typography is supported")
+    for match in re.finditer(r'\bstyle="([^"]*)"', value):
+        pairs = declarations(html.unescape(match[1]))
+        if any(k in {"font", "all"} or "!important" in v or
+               (k == property_name and (v.lower() in {
+                   "inherit", "initial", "unset", "revert", "revert-layer",
+                   "currentcolor", "bolder", "lighter"
+               } or "var(" in v.lower() or
+                   (property_name == "letter-spacing" and
+                    v != "normal" and not re.fullmatch(r"(?:0|[-+]?[\d.]+px)", v))))
+               for k, v in pairs):
+            return value
+    class Tree(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=False)
+            self.root = {"children": [], "font": None, "pairs": []}
+            self.stack = [self.root]
+
+        def handle_starttag(self, tag, attrs):
+            raw = self.get_starttag_text()
+            pairs = declarations(dict(attrs).get("style", ""))
+            props = dict(pairs)
+            parent = self.stack[-1]
+            node = dict(tag=tag, raw=raw, pairs=pairs, children=[],
+                        font=props.get(property_name, parent["font"]), end="",
+                        flex_item=dict(parent["pairs"]).get("display") in {"flex", "inline-flex"})
+            parent["children"].append(node)
+            if tag not in VOID:
+                self.stack.append(node)
+
+        def handle_startendtag(self, tag, attrs):
+            self.handle_starttag(tag, attrs)
+            if tag not in VOID:
+                self.stack.pop()
+
+        def handle_endtag(self, tag):
+            self.stack[-1]["end"] = "</" + tag + ">"
+            self.stack.pop()
+
+        def handle_data(self, text):
+            self.stack[-1]["children"].append(text)
+
+        def handle_entityref(self, name):
+            self.handle_data("&" + name + ";")
+
+        def handle_charref(self, name):
+            self.handle_data("&#" + name + ";")
+
+        def handle_comment(self, text):
+            self.handle_data("<!--" + text + "-->")
+
+    # Work on static fragments only. Keeping native subtrees opaque also avoids
+    # relying on UA font defaults or reserializing SVG.
+    fragments = []
+    def protect(match):
+        fragments.append(match[0])
+        return "GZH_FONT_OPAQUE_%d_TOKEN" % (len(fragments) - 1)
+    value = re.sub(r"<(svg|table|h[1-6]|pre|code|strong|b|em|i|small|sub|sup)\b[^>]*>.*?</\1>",
+                   protect, value, flags=re.S)
+    tree = Tree()
+    tree.feed(value)
+    if len(tree.stack) != 1:
+        raise ValueError("Unbalanced static component")
+    root_ids = {id(n) for n in tree.root["children"] if isinstance(n, dict)}
+    unknown_font = any(n["font"] is None for n in tree.root["children"]
+                       if isinstance(n, dict))
+
+    memo = {}
+    def solve(node, inherited):
+        if isinstance(node, str):
+            return node
+        cache_key = (id(node), inherited)
+        if cache_key in memo:
+            return memo[cache_key]
+        # A block without direct text has no font-sensitive inline line box.
+        props = dict(node["pairs"])
+        movable = (id(node) not in root_ids and (node["tag"] == "section" or
+                    (node["tag"] == "span" and not node["children"] and
+                     (props.get("display") == "block" or node["flex_item"]))) and not any(
+            isinstance(c, str) and c.strip() for c in node["children"]) and
+            not any(k in props for k in ("font", "all")) and
+            not any(re.search(r"[\d.](?:em|ex|ch|lh)\b|%|!important|var\(", v)
+                    for k, v in node["pairs"] if k != property_name))
+        if property_name == "color":
+            # A textless box can still paint with currentColor. Keep its color
+            # fixed unless every border is absent and shadow color is explicit.
+            movable = movable and not any(
+                "currentcolor" in v.lower() or
+                (k.startswith("border") and k != "border-radius" and
+                 v not in {"0", "none"}) or
+                k in {"outline", "outline-color", "text-decoration",
+                      "text-decoration-color", "filter"} or
+                (k == "box-shadow" and v != "none" and
+                 not re.search(r"#[\da-fA-F]+|rgba?\(", v))
+                for k, v in node["pairs"])
+        candidates = {node["font"]}
+        if movable and not unknown_font:
+            candidates.add(inherited)
+            def fonts(n):
+                if isinstance(n, dict):
+                    candidates.add(n["font"])
+                    for c in n["children"]:
+                        fonts(c)
+            fonts(node)
+        options = []
+        for font in candidates:
+            if font is None and inherited is not None:
+                continue  # no CSS spelling for an unknown ancestor font
+            pairs = [(k, v) for k, v in node["pairs"] if k != property_name]
+            if font != inherited:
+                pairs.append((property_name, font))
+            style = ";".join(k + ":" + v for k, v in pairs)
+            raw = re.sub(r'\sstyle="[^"]*"', "", node["raw"], count=1)
+            if style:
+                raw = raw[:-1] + ' style="' + escape_style_attribute(style + ";") + '">'
+            result = raw + "".join(solve(c, font) for c in node["children"]) + node["end"]
+            options.append(result)
+        memo[cache_key] = min(options, key=lambda s: (len(s.encode()), s))
+        return memo[cache_key]
+
+    result = "".join(solve(n, None) if isinstance(n, dict) else n
+                     for n in tree.root["children"])
+    for index, fragment in enumerate(fragments):
+        result = result.replace("GZH_FONT_OPAQUE_%d_TOKEN" % index, fragment)
+    return result
+
+
 class TemplateStyleCleaner(HTMLParser):
     """Reuse typography only inside one static component, never across slots."""
 
@@ -274,6 +412,7 @@ class TemplateStyleCleaner(HTMLParser):
         self.minimal = minimal
         self.output = []
         self.stack = []
+        self.layouts = []
         self.inherited = inherited or {}
 
     def handle_starttag(self, tag, attrs):
@@ -288,6 +427,26 @@ class TemplateStyleCleaner(HTMLParser):
             compact = compact_template_style(style, tag=tag, minimal=self.minimal)
             pairs = declarations(compact)
             props = dict(pairs)
+            original_display = props.get("display")
+            if self.minimal:
+                # A flex item is blockified by its parent. Do not apply this to
+                # arbitrary descendants or change inline-flex/internal layout.
+                if (self.layouts and self.layouts[-1] in {"flex", "inline-flex"}
+                        and props.get("display") == "block" and
+                        props.get("position", "static") == "static" and
+                        props.get("float", "none") == "none"):
+                    props.pop("display")
+                # With no padding or border, border/content-box have identical
+                # geometry even when a width/min-width/height is specified.
+                if (tag in {"section", "span", "p"} and props.get("border", "0") == "0"
+                        and props.get("padding", "0") == "0"
+                        and not any(k.startswith("padding-") or
+                                    (k.startswith("border-") and k != "border-radius")
+                                    for k in props)
+                        and not any(k in props for k in ("all", "aspect-ratio"))
+                        and not any("!important" in v for v in props.values())):
+                    props.pop("box-sizing", None)
+                pairs = list(props.items())
             if not any(key in props for key in ("font", "all")) and not any(
                 "!important" in value or "var(" in value or value in {
                     "inherit", "initial", "unset", "revert", "revert-layer"
@@ -304,23 +463,27 @@ class TemplateStyleCleaner(HTMLParser):
                 compact = ";".join(key + ":" + value for key, value in pairs) + ";"
             else:
                 effective = {}
-            raw = re.sub(r"\bstyle\s*=\s*(\"[^\"]*\"|'[^']*')",
-                         lambda _: 'style="' + escape_style_attribute(compact) + '"',
+            raw = re.sub(r"\sstyle\s*=\s*(\"[^\"]*\"|'[^']*')",
+                         lambda _: (' style="' + escape_style_attribute(compact) + '"'
+                                    if compact.strip(";") else ""),
                          raw, count=1)
         self.output.append(raw)
         if tag not in VOID:
             self.stack.append((tag, effective))
+            self.layouts.append(original_display if style is not None else None)
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs)
         if tag not in VOID:
             self.stack.pop()
+            self.layouts.pop()
 
     def handle_endtag(self, tag):
         self.output.append("</" + tag + ">")
         for index in range(len(self.stack) - 1, -1, -1):
             if self.stack[index][0] == tag:
                 del self.stack[index:]
+                del self.layouts[index:]
                 break
 
     def handle_data(self, data):
@@ -436,23 +599,34 @@ def merge_quote_layout(value):
     return '<section style="' + style + '">' + match[3] + '</section>'
 
 
+def merge_table_spacing(value):
+    """A full-width border-box scroll frame can own its block spacing.
+
+    Unlike arbitrary explicit-width cards, this exact frame fills the same
+    containing block before and after merging. Never generalize to figures or
+    frames with padding, horizontal margins, or alternative width constraints.
+    """
+    prefix = '<section style="margin:0 0 24px;">'
+    if not value.startswith(prefix) or not value.endswith("</section>"):
+        return value
+    inner = value[len(prefix):-len("</section>")]
+    match = re.match(r'<section style="([^"]*)">', inner)
+    if not match or len(re.findall(r"<table\b", inner)) != 1:
+        return value
+    props = dict(declarations(html.unescape(match[1])))
+    if (props.get("width") != "100%" or props.get("box-sizing") != "border-box"
+            or props.get("overflow-x") != "auto" or props.get("margin") != "0"
+            or any(k.startswith(("padding", "min-", "max-")) or
+                   k in {"position", "float", "transform", "height", "display"} for k in props)
+            or any(k.startswith("margin-") for k in props)):
+        return value
+    style = match[1].replace("margin:0;", "margin:0 0 24px;")
+    return '<section style="' + style + '">' + inner[match.end():]
+
+
 def optimize_template_structure(value):
     """Remove text-only span wrappers without altering the styled element."""
-    pattern = re.compile(r'<span(?P<attrs>\s[^<>]*?)?>'
-                         r'<span leaf="">(?P<text>[^<>]*)</span></span>')
-    def merge(match):
-        attrs = match["attrs"] or ""
-        style = re.search(r'\bstyle="([^"]*)"', attrs)
-        props = dict(declarations(html.unescape(style[1]))) if style else {}
-        # Keep actual flex containers; their leaf participates in layout.
-        if props.get("display") in {"flex", "inline-flex"} or "leaf=" in attrs:
-            return match[0]
-        return '<span leaf=""' + attrs + '>' + match["text"] + '</span>'
-    while True:
-        optimized = pattern.sub(merge, value)
-        if optimized == value:
-            break
-        value = optimized
+    value = merge_text_leaf_spans(value)
     # Same SVG primitives and geometry; only serialize equivalent attributes.
     def svg(match):
         source = match[0]
@@ -1058,6 +1232,25 @@ def compile_templates(theme, nodes):
         r'style="([^"]*)"', frame_row_style, result["code_row"], count=1)
     result = {key: clean_template_styles(value, minimal=True)
               for key, value in result.items()}
+    result["table"] = merge_table_spacing(result["table"])
+    # Static-tree font placement is independent of Markdown content. Preserve
+    # dynamic slots' effective fonts while sharing stacks on inert ancestors.
+    result = {key: clean_template_styles(allocate_template_fonts(value), minimal=True)
+              for key, value in result.items()}
+    for property_name in ("font-weight", "font-style", "letter-spacing", "color"):
+        result = {key: clean_template_styles(
+            allocate_template_fonts(value, property_name=property_name), minimal=True)
+                  for key, value in result.items()}
+    # The deterministic code assembler always supplies flex rows. Own their
+    # shared line-height in the existing scrolling body, not in every row.
+    # Leave the standalone frame and standalone row contracts unchanged.
+    def code_body(match):
+        return match[0].replace("line-height:22px;", "line-height:1.6;")
+    result["code_with_rows"] = re.sub(
+        r'<section style="[^"]*">\{\{rows_html\}\}</section>',
+        code_body, result["code"])
+    result["code_row_in_rows"] = result["code_row_in_frame"].replace(
+        "line-height:1.6;", "")
     def inherited_variant(value, contract):
         return clean_template_styles(value, minimal=True, inherited={
             key: val for key, val in contract.items() if key in INHERITED_TYPOGRAPHY})
@@ -1086,6 +1279,34 @@ def compile_templates(theme, nodes):
         'style="', 'style="' + escape_style_attribute(extra), 1)
     for key in item_names:
         result[key + "_in_list"] = inherited_variant(result[key], shared)
+    # The assembled article is predominantly Inter. Keep the public container
+    # unchanged, and use an explicit article contract rather than modifying the
+    # completed HTML. Components remain independently usable.
+    system_font = compact_css_value("font-family", FONT)
+    article_font = "Inter," + system_font
+    result["container_in_article"] = result["container"].replace(
+        "font-family:" + system_font + ";", "font-family:" + article_font + ";")
+    contract["font-family"] = article_font
+    direct += ["step", "code", "code_with_rows", "image", "table", "divider", "list_with_items"]
+    for key in direct:
+        value = result[key]
+        if key == "divider":
+            value = value.replace('style="', 'style="font-family:' + system_font + ";", 1)
+        result[key + "_in_article"] = inherited_variant(value, contract)
+    # A sole ordinary paragraph can own the card's painted box. Use a named
+    # assembly contract, never flatten arbitrary cards or mixed block content.
+    card = re.fullmatch(r'<section style="([^"]*)">\{\{body_html\}\}</section>',
+                        result["prose_card_in_article"])
+    if not card:
+        raise ValueError("Unexpected prose card structure")
+    pairs = declarations(html.unescape(card[1]))
+    props = dict(pairs)
+    if props.get("display") != "flex" or props.get("flex-direction") != "column":
+        raise ValueError("Unexpected prose card layout")
+    style = ";".join(k + ":" + v for k, v in pairs
+                     if k not in {"display", "flex-direction", "gap"}) + ";"
+    result["prose_card_single_in_article"] = (
+        '<p style="' + escape_style_attribute(style) + '">{{body_html}}</p>')
     return result
 
 
@@ -1094,8 +1315,12 @@ DISPLAY = {
     "chapter_overprint": "浮光·透叠数字", "chapter_pure": "素墨·克制留白",
     "step": "步骤标题", "quote": "双向引号沉思卡", "pullquote": "强调金句",
     "paragraph": "正文段落", "warning": "暖黄警示", "metric": "灰阶诊断卡",
+    "prose_card_single": "单段正文卡片",
     "code": "macOS 代码视窗", "code_row": "独立逐行代码",
-    "code_row_in_frame": "代码视窗内逐行代码", "unordered_item": "方标列表项",
+    "code_row_in_frame": "代码视窗内逐行代码",
+    "code_with_rows": "文章代码视窗（与共享行高的代码行配套）",
+    "code_row_in_rows": "文章代码行（继承代码正文行高）",
+    "unordered_item": "方标列表项",
     "ordered_item": "数字列表项", "task_item": "任务列表项", "list": "列表容器",
     "list_with_items": "列表容器（与列表内变体配套）",
     "table": "横滑安全表格", "table_cell": "表格单元格", "image": "相框与图注",

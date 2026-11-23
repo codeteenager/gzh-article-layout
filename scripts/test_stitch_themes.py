@@ -547,6 +547,148 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertEqual(compact_template_style(
             "flex:0 0 auto;flex-shrink:0;", minimal=True), "flex:none;")
 
+    def test_font_allocation_preserves_slots_and_opaque_boundaries(self):
+        from build_stitch_themes import allocate_template_fonts
+        source = ('<section style="font-family:Inter,sans-serif;">'
+                  '<section><span style="font-family:Consolas,monospace;">{{a}}</span>'
+                  '<span style="font-family:Consolas,monospace;">{{b}}</span></section>'
+                  '<h3 style="font-family:Inter,sans-serif;">标题</h3></section>')
+        value = allocate_template_fonts(source)
+        self.assertLess(len(value), len(source))
+        self.assertEqual(value.count("font-family:Consolas,monospace;"), 1)
+        self.assertIn('<h3 style="font-family:Inter,sans-serif;">标题</h3>', value)
+        # Direct text, including a runtime slot, pins its exact original font.
+        pinned = '<section style="font-family:Inter,sans-serif;">{{body_html}}</section>'
+        self.assertEqual(allocate_template_fonts(pinned), pinned)
+        unknown = '<section style="font:14px sans-serif;">{{body_html}}</section>'
+        self.assertEqual(allocate_template_fonts(unknown), unknown)
+        inherited = '<section><span>{{unknown_html}}</span></section>'
+        self.assertEqual(allocate_template_fonts(inherited), inherited)
+        self.assertEqual(allocate_template_fonts(value), value)
+
+    def test_article_font_contract_does_not_change_public_container(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("font-family:-apple-system", data["container"])
+            self.assertIn("font-family:Inter,-apple-system", data["container_in_article"])
+            self.assertIn("font-family:-apple-system", data["divider_in_article"])
+            self.assertNotIn("font-family:Inter,", data["list_with_items_in_article"])
+            self.assertIn("font-family:Inter,", data["list_with_items"])
+
+    def test_typography_allocation_keeps_paint_and_runtime_boundaries(self):
+        from build_stitch_themes import allocate_template_fonts
+        for prop, first, second in (
+            ("color", "red", "blue"),
+            ("letter-spacing", "1px", "2px"),
+            ("font-style", "normal", "italic"),
+        ):
+            source = (f'<section style="{prop}:{first};"><section>'
+                      f'<span style="{prop}:{second};">{{{{a}}}}</span>'
+                      f'<span style="{prop}:{second};">{{{{b_html}}}}</span>'
+                      '</section></section>')
+            value = allocate_template_fonts(source, prop)
+            self.assertLess(len(value), len(source))
+            self.assertEqual(value.count(f"{prop}:{second};"), 1)
+            self.assertEqual(allocate_template_fonts(value, prop), value)
+        painted = ('<section style="color:red;"><section style="border:1px solid;">'
+                   '<span style="color:blue;">{{a}}</span>'
+                   '<span style="color:blue;">{{b}}</span></section></section>')
+        self.assertEqual(allocate_template_fonts(painted, "color"), painted)
+        for prop, relative in (("letter-spacing", ".2em"), ("color", "currentColor"),
+                               ("font-weight", "bolder")):
+            source = f'<section style="{prop}:{relative};"><span>text</span></section>'
+            self.assertEqual(allocate_template_fonts(source, prop), source)
+        # Relative line-height is dependent on each node's size: not eligible.
+        with self.assertRaises(ValueError):
+            allocate_template_fonts(painted, "line-height")
+
+    def test_runtime_inline_leaf_fusion_preserves_nested_markup(self):
+        from stitch_themes import merge_text_leaf_spans
+        renderer = Renderer()
+        for text, expected in (("**重点**", "重点"), ("`a < b`", "a < b"),
+                               ("*斜体*", "斜体"), ("++关键词++", "关键词"),
+                               ("<kbd>Ctrl</kbd>", "Ctrl")):
+            value = renderer.inline(text)
+            self.assertNotIn('<span leaf=""></span>', value)
+            self.assertEqual(value.count("<span"), 1)
+            self.assertEqual(Text(value).text(), expected)
+            self.assertIn('leaf=""', value)
+        nested = renderer.inline("**前面 *斜体* 后面**")
+        self.assertEqual(Text(nested).text(), "前面 斜体 后面")
+        for display in ("flex", "inline-flex", "grid", "contents"):
+            source = f'<span style="display:{display};"><span leaf="">文字</span></span>'
+            self.assertEqual(merge_text_leaf_spans(source), source)
+        self.assertIn("font-size:11px;vertical-align:super;",
+                      renderer.inline("[^note]"))
+
+    def test_single_paragraph_card_has_one_box_and_preserves_inline_markup(self):
+        for theme in catalog():
+            for layout in LAYOUTS:
+                renderer = Renderer(theme["id"], layout)
+                value = renderer.blocks(
+                    ["正文 **强调** 与 `code`，[^note]。", "换行保留。"],
+                    prose_cards=True)
+                self.assertTrue(value.startswith("<p style="))
+                self.assertEqual(value.count("<p "), 1)
+                self.assertNotIn("<section", value)
+                self.assertIn("<br>", value)
+                self.assertIn("box-shadow:", value)
+                self.assertIn("margin:0 0 24px;", value)
+                self.assertNotIn("display:flex;", value)
+                self.assertEqual(validate(value)[0], [])
+                # Two paragraphs keep the original card and its 12px flex gap.
+                multiple = renderer.blocks(["第一段。", "", "第二段。"],
+                                           prose_cards=True)
+                self.assertTrue(multiple.startswith("<section"))
+                self.assertIn("gap:12px;", multiple)
+                self.assertEqual(multiple.count('<p style="margin:0;">'), 2)
+                plain = renderer.blocks(["独立正文。"])
+                self.assertIn("margin:0 0 16px;", plain)
+                self.assertNotIn("box-shadow:", plain)
+
+    def test_scroll_table_spacing_uses_one_frame(self):
+        from build_stitch_themes import merge_table_spacing
+        source = ('<section style="margin:0 0 24px;">'
+                  '<section style="box-sizing:border-box;width:100%;overflow-x:auto;margin:0;">'
+                  '<table>{{rows_html}}</table></section></section>')
+        value = merge_table_spacing(source)
+        self.assertEqual(value.count("<section"), 1)
+        self.assertIn("margin:0 0 24px;", value)
+        self.assertEqual(merge_table_spacing(source.replace("100%", "80%")),
+                         source.replace("100%", "80%"))
+
+    def test_layout_context_removes_only_blockified_display(self):
+        source = ('<section style="display:flex;"><span style="display:block;">'
+                  '<span style="display:block;">text</span></span></section>')
+        value = clean_template_styles(source, minimal=True)
+        self.assertIn('<span><span style="display:block;">', value)
+        self.assertIn('display:inline-flex;', clean_template_styles(
+            source.replace('display:block;', 'display:inline-flex;', 1), minimal=True))
+
+    def test_dimensioned_boxes_keep_sizing_when_padding_or_border_present(self):
+        for geometry in ("padding:1px;", "padding-left:1px;", "border-left:1px solid red;"):
+            source = '<span style="box-sizing:border-box;width:24px;border:0;' + geometry + '">x</span>'
+            self.assertIn("box-sizing:border-box;", clean_template_styles(source, minimal=True))
+        source = '<span style="box-sizing:border-box;min-width:24px;border:0;">x</span>'
+        value = clean_template_styles(source, minimal=True)
+        self.assertNotIn("box-sizing:", value)
+        self.assertIn("border:0;", value)
+
+    def test_assembled_code_and_list_have_explicit_parent_contracts(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("line-height:1.6;", data["code_with_rows"])
+            self.assertNotIn("line-height:", data["code_row_in_rows"])
+            self.assertIn("line-height:1.6;", data["code_row_in_frame"])
+            self.assertIn("color:", data["unordered_item_in_list"])
+            self.assertIn("color:", data["task_item_in_list"])
+        # Quote paragraph normalization strips row line-height. Its original
+        # fixed 22px code-body line-height must NOT be changed by the new variant.
+        quoted = Renderer().blocks(["> ```txt", "> quoted", "> ```"], prose_cards=True)
+        self.assertIn("line-height:22px;", quoted)
+        direct = Renderer().blocks(["```txt", "direct", "```"], prose_cards=True)
+        self.assertNotIn("line-height:22px;", direct)
+
 
 if __name__ == "__main__":
     unittest.main()

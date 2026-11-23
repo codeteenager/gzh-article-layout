@@ -320,6 +320,79 @@ def clean_template_styles(value):
     return result
 
 
+def merge_component_spacing(value):
+    """Fold the compiler's spacing wrapper into one zero-margin block.
+
+    Only the wrapper introduced by compile_templates is eligible. Keep source
+    markup (including SVG and dynamic slots) untouched; do not reserialize it.
+    Explicit widths, positioning and nonzero margins retain their wrappers.
+    """
+    prefix = '<section style="margin:0 0 24px;">'
+    if not value.startswith(prefix) or not value.endswith("</section>"):
+        return value
+    inner = value[len(prefix):-len("</section>")]
+    root = re.match(r'<(?P<tag>section|figure) style="(?P<style>[^"]*)">', inner)
+    if not root:
+        return value
+    # One root, not two siblings accidentally matched by the final closing tag.
+    depth = 0
+    for token in re.finditer(r'</?(?:section|figure)\b[^>]*>', inner):
+        depth += -1 if token[0].startswith("</") else 1
+        if depth == 0 and token.end() != len(inner):
+            return value
+    if depth != 0:
+        return value
+    pairs = declarations(html.unescape(root["style"]))
+    props = dict(pairs)
+    if props.get("display") not in {"block", "flex"}:
+        return value
+    if any(key in props for key in (
+            "width", "min-width", "max-width", "height", "min-height",
+            "max-height", "position", "float", "transform")):
+        return value
+    margins = [(key, val) for key, val in pairs if key.startswith("margin")]
+    if any(val not in {"0", "0px"} for key, val in margins):
+        return value
+    if props.get("margin-top", props.get("margin")) not in {"0", "0px"}:
+        return value
+    if props.get("margin-bottom", props.get("margin")) not in {"0", "0px"}:
+        return value
+    # Preserve the original serialization of all other properties, notably fonts.
+    style = re.sub(r'(?:^|;)(margin(?:-top|-bottom|-left|-right)?):(?:0|0px)(?=;|$)',
+                   "", root["style"])
+    style = style.strip(";") + ";margin:0 0 24px;"
+    return (f'<{root["tag"]} style="{style}">' + inner[root.end():])
+
+
+def merge_quote_layout(value):
+    """Move a quote's undecorated flex row onto its surrounding card."""
+    match = re.fullmatch(
+        r'<section style="([^"]*)"><section style="([^"]*)">(.*)</section></section>',
+        value, flags=re.S)
+    if not match:
+        return value
+    outer = dict(declarations(html.unescape(match[1])))
+    child = dict(declarations(html.unescape(match[2])))
+    expected = {
+        "box-sizing": "border-box", "display": "flex", "gap": "12px",
+        "flex-direction": "row", "flex": "0 1 auto", "margin-top": "0",
+        "margin-bottom": "0", "border-radius": "0",
+        "border": "0 solid #e5e7eb", "padding": "0",
+    }
+    if outer.get("display") != "block" or child != expected:
+        return value
+    # Do not match sibling sections as though they were one enclosing row.
+    depth = 0
+    for token in re.finditer(r'</?section\b[^>]*>', match[3]):
+        depth += -1 if token[0].startswith("</") else 1
+        if depth < 0:
+            return value
+    if depth:
+        return value
+    style = match[1].replace("display:block;", "display:flex;gap:12px;flex-direction:row;")
+    return '<section style="' + style + '">' + match[3] + '</section>'
+
+
 def optimize_template_structure(value):
     """Remove text-only span wrappers without altering the styled element."""
     pattern = re.compile(r'<span(?P<attrs>\s[^<>]*?)?>'
@@ -347,7 +420,8 @@ def optimize_template_structure(value):
         source = re.sub(r'(<rect\b[^>]*?)\sy="0"', r'\1', source)
         source = re.sub(r'(<rect\b[^>]*?)\sx="0"', r'\1', source)
         return source
-    return re.sub(r'<svg\b.*?</svg>', svg, value, flags=re.S)
+    value = re.sub(r'<svg\b.*?</svg>', svg, value, flags=re.S)
+    return merge_component_spacing(value)
 
 
 class Node:
@@ -928,6 +1002,8 @@ def compile_templates(theme, nodes):
             result[key] = '<section style="margin:0 0 24px;">' + result[key] + "</section>"
     result = {key: optimize_template_structure(clean_template_styles(value))
               for key, value in result.items()}
+    for key in ("quote", "quote_ruler", "quote_overprint", "quote_pure"):
+        result[key] = merge_quote_layout(result[key])
     # The public standalone row keeps its complete typography. The in-frame
     # variant explicitly relies only on the known code-body font contract.
     def frame_row_style(match):

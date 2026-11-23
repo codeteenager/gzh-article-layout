@@ -230,6 +230,48 @@ class StitchTests(unittest.TestCase):
 
 
 class TemplateStyleTests(unittest.TestCase):
+    def test_spacing_wrapper_merges_without_reserializing_content(self):
+        from build_stitch_themes import merge_component_spacing
+        body = '<svg viewBox="0 0 1 1"><rect width="1"/></svg>{{body_html}}'
+        card = ('<section style="display:flex;font-family:&#x27;PingFang SC&#x27;;'
+                'margin-top:0;margin-bottom:0;padding:14px;">' + body + '</section>')
+        source = '<section style="margin:0 0 24px;">' + card + '</section>'
+        result = merge_component_spacing(source)
+        self.assertEqual(result.count('<section'), 1)
+        self.assertIn('font-family:&#x27;PingFang SC&#x27;;', result)
+        self.assertIn('padding:14px;margin:0 0 24px;', result)
+        self.assertIn(body, result)
+        self.assertEqual(merge_component_spacing(result), result)
+
+    def test_spacing_wrapper_retains_unsafe_geometry_and_siblings(self):
+        from build_stitch_themes import merge_component_spacing
+        for extra in ('width:100%;', 'position:relative;', 'margin:12px 0;',
+                      'margin-left:auto;', 'transform:translateX(1px);'):
+            card = ('<section style="display:block;margin-top:0;'
+                    'margin-bottom:0;' + extra + '">{{body_html}}</section>')
+            source = '<section style="margin:0 0 24px;">' + card + '</section>'
+            self.assertEqual(merge_component_spacing(source), source)
+        source = ('<section style="margin:0 0 24px;">'
+                  '<section style="display:block;margin:0;">甲</section>'
+                  '<section>乙</section></section>')
+        self.assertEqual(merge_component_spacing(source), source)
+
+    def test_quote_row_merges_only_exact_undecorated_layout(self):
+        from build_stitch_themes import merge_quote_layout
+        outer = '<section style="display:block;padding:20px;border-left:6px solid red;">'
+        row = ('<section style="box-sizing:border-box;display:flex;gap:12px;'
+               'flex-direction:row;flex:0 1 auto;margin-top:0;margin-bottom:0;'
+               'border-radius:0;border:0 solid #e5e7eb;padding:0;">')
+        body = '<section>引号</section><section>{{text_html}}</section>'
+        source = outer + row + body + '</section></section>'
+        result = merge_quote_layout(source)
+        self.assertEqual(result.count('<section'), source.count('<section') - 1)
+        self.assertIn('display:flex;gap:12px;flex-direction:row;', result)
+        self.assertIn(body, result)
+        for changed in ('padding:1px;', 'margin-bottom:1px;', 'width:100%;padding:0;'):
+            unsafe = source.replace('padding:0;', changed)
+            self.assertEqual(merge_quote_layout(unsafe), unsafe)
+
     def test_text_leaf_merges_but_flex_leaf_keeps_layout(self):
         from build_stitch_themes import optimize_template_structure
         source = '<span style="display:block;color:red;"><span leaf="">文字</span></span>'

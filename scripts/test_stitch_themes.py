@@ -380,7 +380,7 @@ class TemplateStyleTests(unittest.TestCase):
     def test_font_family_serialization_stays_compatible_with_renderer(self):
         source = '<p style="font-family:&#x27;PingFang SC&#x27;;"><span leaf="">正文。</span></p>'
         result = clean_template_styles(source)
-        self.assertIn("font-family:'PingFang SC';", result)
+        self.assertIn("font-family:PingFang SC;", result)
         quoted = '<p style="font-family:&quot;A&amp;B&quot;;">text</p>'
         self.assertIn('&quot;A&amp;B&quot;', clean_template_styles(quoted))
 
@@ -394,12 +394,12 @@ class TemplateStyleTests(unittest.TestCase):
     def test_only_transparent_shadow_layers_are_removed(self):
         style = "box-shadow:rgba(0,0,0,0.0) 0px 0px 0px 0px, rgba(0,0,0,0.05) 0px 1px 2px 0px;"
         result = compact_template_style(style)
-        self.assertEqual(result, "box-shadow:rgba(0,0,0,0.05) 0 1px 2px 0;")
+        self.assertEqual(result, "box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;")
         self.assertEqual(compact_template_style(result), result)
         mixed = "box-shadow:rgba(0,0,0,0.0) 0 0px 0 0px, rgba(0,0,0,.1) 0 1px 2px 0;"
         self.assertNotIn("rgba(0,0,0,0.0)", compact_template_style(mixed))
         visible = "box-shadow:rgba(0,0,0,0.1) 0 0 0 0;"
-        self.assertEqual(compact_template_style(visible), visible)
+        self.assertEqual(compact_template_style(visible), visible.replace("0.1", ".1"))
 
     def test_final_default_pass_is_tag_scoped_and_keeps_resets(self):
         style = ("display:block;flex:0 1 auto;flex-direction:row;"
@@ -439,7 +439,7 @@ class TemplateStyleTests(unittest.TestCase):
             for layout in LAYOUTS:
                 quote = data["quote_" + layout]
                 self.assertIn("display:flex;gap:12px;", quote)
-                self.assertIn("border-width:0 0 0 6px;", quote)
+                self.assertIn("border-left:6px solid ", quote)
                 self.assertNotIn('<section style="margin:0 0 24px;"><section', quote)
 
     def test_table_retains_inheritance_boundary(self):
@@ -451,6 +451,58 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertIn('a;b.png', compact_template_style(style))
         important = "color:red!important;color:blue;"
         self.assertEqual(compact_template_style(important), important)
+
+    def test_css_lexical_compaction_preserves_urls_and_unknown_fonts(self):
+        source = "font-family:'A;B',sans-serif;background:url('0.5-#ffffff.png');"
+        result = compact_template_style(source)
+        self.assertIn("'A;B'", result)
+        self.assertIn("url('0.5-#ffffff.png')", result)
+        result = compact_template_style(
+            "color:#ffffff;letter-spacing:0.5px;font-family:'SF Mono',monospace;")
+        self.assertIn("color:#fff;", result)
+        self.assertIn("letter-spacing:.5px;", result)
+        self.assertIn("font-family:SF Mono,monospace;", result)
+
+    def test_span_sizing_only_removed_without_effective_box_geometry(self):
+        for extra in ("min-width:24px;", "width:10px;", "padding:1px;",
+                      "padding-left:1px;", "border-bottom:1px solid red;"):
+            result = compact_template_style("box-sizing:border-box;" + extra,
+                                            tag="span", minimal=True)
+            self.assertIn("box-sizing:border-box;", result)
+        result = compact_template_style(
+            "box-sizing:border-box;min-width:0;border:0;padding:0;"
+            "margin-top:0;margin-bottom:0;margin-left:4px;", tag="span", minimal=True)
+        self.assertNotIn("box-sizing:", result)
+        self.assertNotIn("padding:", result)
+        self.assertIn("min-width:0;", result)
+        self.assertIn("margin-left:4px;", result)
+        result = compact_template_style("margin:4px;margin-top:0;",
+                                        tag="span", minimal=True)
+        self.assertIn("margin-top:0;", result)
+
+    def test_background_shorthand_keeps_image_and_other_background_properties(self):
+        result = compact_template_style("background-color:#ffffff;", minimal=True)
+        self.assertEqual(result, "background:#fff;")
+        for extra in ("background-image:url(image.png);", "background-size:cover;"):
+            result = compact_template_style("background-color:#ffffff;" + extra,
+                                            minimal=True)
+            self.assertIn("background-color:#fff;", result)
+            self.assertNotIn("background:#fff;", result)
+
+    def test_article_variants_keep_standalone_contract_and_nested_overrides(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("font-size:14px;", data["hero_ruler"])
+            self.assertNotIn("font-size:14px;", data["hero_ruler_in_article"].split(">", 1)[0])
+            self.assertIn("font-family:", data["toc_item_ruler"])
+            self.assertNotIn("font-family:", data["toc_item_ruler_in_toc"].split(">", 1)[0])
+        standalone = Renderer().blocks(["## 章节"])
+        article = Renderer().blocks(["## 章节"], prose_cards=True)
+        self.assertIn("font-size:14px;", standalone.split(">", 1)[0])
+        self.assertNotIn("font-size:14px;", article.split(">", 1)[0])
+        # Nested quotes/headings are NOT direct children of the article container.
+        nested = Renderer().blocks(["> ## 嵌套章节"], prose_cards=True)
+        self.assertIn("font-size:14px;", nested[nested.find("<section", 1):])
 
 
 if __name__ == "__main__":

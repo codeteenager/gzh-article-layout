@@ -45,7 +45,7 @@ def inherit_paragraphs(value):
                    "letter-spacing", "color"}
         # Generic card paragraphs inherit wrapping too. The old entity-broken
         # font removal swallowed this declaration; do not activate it now.
-        if any(key == "font-family" and ("'" in val or '"' in val)
+        if any(key == "font-family" and ("'" in val or '"' in val or "PingFang SC" in val)
                for key, val in pairs):
             removed.add("overflow-wrap")
         style = ";".join(key + ":" + ("0" if key == "margin" else val)
@@ -67,9 +67,11 @@ class Renderer:
         self.footnotes = {}
         self.references = {}
 
-    def c(self, name, **fields):
+    def c(self, name, _in_article=False, **fields):
         if name in {"hero", "quote", "toc", "toc_item", "signature", "engagement"}:
             name += "_" + self.layout
+        if _in_article:
+            name += "_in_article"
         return component(self.id, name, **fields)
 
     def inline(self, text):
@@ -214,7 +216,8 @@ class Renderer:
                 elif level == 2:
                     self.section_no += 1
                     self.step_no = 0
-                    out.append(chapter(self.id, title, self.section_no, self.layout))
+                    out.append(chapter(self.id, title, self.section_no, self.layout,
+                                       in_article=prose_cards))
                 else:
                     self.step_no += 1
                     out.append(self.c("step", number=self.step_no, title=title, subtitle=""))
@@ -231,7 +234,7 @@ class Renderer:
                     i += 1
                 body = self.blocks(quoted)
                 body = inherit_paragraphs(body)
-                out.append(self.c("quote", body_html=body, attribution=""))
+                out.append(self.c("quote", _in_article=prose_cards, body_html=body, attribution=""))
                 continue
             extension = re.match(r"^:::\s*(warning|info|tip|quote|details|author|engagement)(?:\s+(.*))?$", line)
             if extension:
@@ -340,7 +343,7 @@ class Renderer:
             def card(match):
                 inner = match[0].replace("<!--prose-->", "").replace("<!--/prose-->", "")
                 inner = inherit_paragraphs(inner)
-                return self.c("prose_card", body_html=inner)
+                return self.c("prose_card", _in_article=True, body_html=inner)
             result = re.sub(r"(?:<!--prose-->.*?<!--/prose-->)+", card, result, flags=re.S)
         return result
 
@@ -370,14 +373,14 @@ class Renderer:
                     bio = bio[:split.start()]
                 self.bio = self.bio or bio
         chapters = [re.sub(r"^##\s+", "", line) for line in lines if line.startswith("## ")][:3]
-        cover = self.c("hero", category=self.theme["name"], meta="深度排版实战", credit="原创思考",
+        cover = self.c("hero", _in_article=True, category=self.theme["name"], meta="深度排版实战", credit="原创思考",
                        title=title, subtitle="")
         content = self.blocks(lines, prose_cards=True)
         toc = ""
         if chapters:
-            items = "".join(self.c("toc_item", number=str(i).zfill(2), title=t,
+            items = "".join(self.c("toc_item_" + self.layout + "_in_toc", number=str(i).zfill(2), title=t,
                                   description="") for i, t in enumerate(chapters, 1))
-            toc = self.c("toc", items_html=items, toc_hint="精选看点")
+            toc = self.c("toc", _in_article=True, items_html=items, toc_hint="精选看点")
         # Opening quote precedes TOC, matching the source article.
         if content.startswith("<section") and lines and next((l for l in lines if l.strip()), "").startswith(">"):
             # blocks already preserves the quote; do not relocate/split its nested HTML.
@@ -395,14 +398,14 @@ class Renderer:
         fields = dict(author=author, initial=author[0] if self.author else "作",
                       bio=chinese_punctuation(self.bio or "{{简介}}"))
         if self.qr_url:
-            footer = self.c("signature", qr_url=self.qr_url, qr_caption="扫码关注",
+            footer = self.c("signature", _in_article=True, qr_url=self.qr_url, qr_caption="扫码关注",
                             signature_note="长按右侧二维码关注专栏", **fields)
         else:
-            footer = self.c("signature_no_qr_" + self.layout, **fields)
-        notes = "".join(self.c("footnote", number="[^" + n + "]", body_html=self.inline(text))
+            footer = self.c("signature_no_qr_" + self.layout, _in_article=True, **fields)
+        notes = "".join(self.c("footnote", _in_article=True, number="[^" + n + "]", body_html=self.inline(text))
                         for n, text in self.footnotes.items())
         result = self.c("container", body_html=cover + toc + content + notes + footer +
-                        self.c("engagement", message=chinese_punctuation(self.footer_message)))
+                        self.c("engagement", _in_article=True, message=chinese_punctuation(self.footer_message)))
         errors, warnings, _ = validate(result)
         if errors or warnings:
             raise ValueError("输出未通过校验：\n" + "\n".join(errors + warnings))

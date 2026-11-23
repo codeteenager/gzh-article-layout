@@ -80,13 +80,13 @@ def component(theme_id, name, **fields):
     return re.sub(r'<p\b[^>]*><span leaf=""></span></p>', "", result)
 
 
-def chapter(theme_id, title, number, layout=None, subtitle=""):
+def chapter(theme_id, title, number, layout=None, subtitle="", in_article=False):
     theme = theme_by_id(theme_id)
     layout = layout or theme["layout"]
     if layout not in LAYOUTS:
         raise ValueError("未知版式：" + layout)
     return component(
-        theme_id, "chapter_" + layout, title=title,
+        theme_id, "chapter_" + layout + ("_in_article" if in_article else ""), title=title,
         number=str(number).zfill(2), subtitle=subtitle,
         label="第" + ("一二三四五六七八九十"[int(number)-1] if 1 <= int(number) <= 10 else str(number)) + "章",
     )

@@ -112,10 +112,13 @@ ZERO_LENGTH_PROPERTIES = {
 
 def compact_css_value(key, value):
     if key == "font-family":
-        return re.sub(r"\s*,\s*", ",", value).strip()
+        value = re.sub(r"\s*,\s*", ",", value).strip()
+        # Only known simple family names: never rewrite arbitrary CSS strings.
+        return re.sub(r"'(PingFang SC|Microsoft YaHei|Plus Jakarta Sans|JetBrains Mono|SF Mono)'",
+                      r"\1", value)
     if key == "box-shadow":
         # Remove only the exact transparent, zero-size layers in source exports.
-        value = re.sub(r"(?:^|(?<=,))\s*rgba\(0,0,0,0(?:\.0)?\)\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s*,\s*",
+        value = re.sub(r"(?:^|(?<=,))\s*rgba\(0,0,0,(?:0(?:\.0)?|\.0)\)\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s*,\s*",
                        "", value)
     if key in ZERO_LENGTH_PROPERTIES or re.fullmatch(
         r"(?:margin|padding)-(?:top|right|bottom|left)|border-(?:top|right|bottom|left)(?:-width)?",
@@ -126,7 +129,14 @@ def compact_css_value(key, value):
         for i in range(0, len(tokens), 2):
             tokens[i] = re.sub(r"(?<![\w.#-])0px\b", "0", tokens[i])
         value = "".join(tokens)
-    return value
+    # Do not touch URLs or quoted strings. Color/functions in these templates
+    # contain numeric tokens; their decimal and hex forms remain equivalent.
+    tokens = re.split(r'("[^"]*"|\'[^\']*\'|url\([^)]*\))', value)
+    for i in range(0, len(tokens), 2):
+        tokens[i] = re.sub(r"(?<![\w.])0\.(\d)", r".\1", tokens[i])
+        tokens[i] = re.sub(r"#([\da-fA-F])\1([\da-fA-F])\2([\da-fA-F])\3\b",
+                           r"#\1\2\3", tokens[i])
+    return "".join(tokens)
 
 
 def compact_template_style(style, tag=None, minimal=False):
@@ -203,6 +213,31 @@ def compact_template_style(style, tag=None, minimal=False):
                 del props["margin-top"]
                 del props["margin-bottom"]
                 props["margin"] = "0"
+        if tag == "span":
+            for key in ("padding", "margin", "margin-top", "margin-bottom"):
+                if (props.get(key) == "0" and not
+                        (key in {"margin-top", "margin-bottom"} and
+                         props.get("margin", "0") != "0")):
+                    del props[key]
+            geometry = ("width", "height", "min-width", "max-width",
+                        "min-height", "max-height", "padding", "border-width",
+                        "border-left", "border-bottom", "border-top", "border-right")
+            if (not any(key in props and props[key] not in {"0", "auto", "none"}
+                        for key in geometry) and props.get("border", "0") == "0" and
+                    not any(key.startswith(("padding-", "border-")) for key in props)):
+                props.pop("box-sizing", None)
+        if "background-color" in props and not any(
+                key.startswith("background") and key != "background-color" for key in props):
+            props["background"] = props.pop("background-color")
+        if (props.get("border-width") == "0 0 0 6px" and props.get("border-style") == "solid" and
+                not any(key.startswith("border-image") for key in props)):
+            colors = css_tokens(props.get("border-color", ""))
+            if len(colors) == 4:
+                del props["border-width"]
+                del props["border-style"]
+                del props["border-color"]
+                props["border"] = "0"
+                props["border-left"] = "6px solid " + colors[-1]
     return ";".join(key + ":" + compact_css_value(key, value)
                     for key, value in props.items()) + ";"
 
@@ -1005,8 +1040,31 @@ def compile_templates(theme, nodes):
         return 'style="' + escape_style_attribute(style) + '"'
     result["code_row_in_frame"] = re.sub(
         r'style="([^"]*)"', frame_row_style, result["code_row"], count=1)
-    return {key: clean_template_styles(value, minimal=True)
-            for key, value in result.items()}
+    result = {key: clean_template_styles(value, minimal=True)
+              for key, value in result.items()}
+    def inherited_variant(value, contract):
+        # Root only: children already preserve their explicit overrides.
+        def opening(match):
+            pairs = declarations(html.unescape(match[2]))
+            style = ";".join(key + ":" + val for key, val in pairs
+                             if key not in INHERITED_TYPOGRAPHY or
+                             val != contract.get(key)) + ";"
+            return '<' + match[1] + ' style="' + escape_style_attribute(style) + '">'
+        return re.sub(r'^<(section|p) style="([^"]*)">', opening, value, count=1)
+    contract = dict(declarations(html.unescape(
+        re.search(r'style="([^"]*)"', result["container"])[1])))
+    direct = ["prose_card", "footnote"]
+    for layout in ("ruler", "overprint", "pure"):
+        direct += [name + "_" + layout for name in (
+            "hero", "quote", "chapter", "toc", "signature", "signature_no_qr", "engagement")]
+        # Toc items use the complete inherited typography at their insertion slot.
+        value = result["toc_item_" + layout]
+        toc_contract = dict(declarations(html.unescape(
+            re.search(r'style="([^"]*)"', result["toc_" + layout])[1])))
+        result["toc_item_" + layout + "_in_toc"] = inherited_variant(value, toc_contract)
+    for key in direct:
+        result[key + "_in_article"] = inherited_variant(result[key], contract)
+    return result
 
 
 DISPLAY = {
@@ -1044,7 +1102,12 @@ def reference(theme, templates):
         "## 各组件完整 HTML", "",
     ]
     for key, value in templates.items():
-        lines += ["### " + DISPLAY.get(key, key) + " · `" + key + "`", "", "```html", value, "```", ""]
+        label = DISPLAY.get(key, key)
+        for suffix, context in (("_in_article", "（文章容器内）"), ("_in_toc", "（目录容器内）")):
+            if key.endswith(suffix):
+                base = key.removesuffix(suffix)
+                label = DISPLAY.get(base, base) + context
+        lines += ["### " + label + " · `" + key + "`", "", "```html", value, "```", ""]
     lines += [
         "## 完整文章模板骨架", "",
         "`container` → `hero` → 开头原文引言（若有，`quote`）→ `toc`（精选最多 3 项）→",

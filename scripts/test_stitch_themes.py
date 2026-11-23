@@ -170,7 +170,8 @@ class StitchTests(unittest.TestCase):
             self.assertIn("在看", text)
             self.assertIn("转发", text)
             self.assertNotIn("♡", text)
-            self.assertTrue("padding-top:8px" in value or "padding:8px 0px 0px;" in value)
+            self.assertTrue("padding-top:8px" in value or
+                            "padding:8px 0px 0px;" in value or "padding:8px 0 0;" in value)
             for icon in ("thumb_up", "visibility", "share"):
                 path = re.search(r'<path d="([^"]+)"', (ROOT/"assets/stitch/icons"/(icon+".svg")).read_text())[1]
                 self.assertIn(path, value)
@@ -270,14 +271,44 @@ class TemplateStyleTests(unittest.TestCase):
 
     def test_box_shorthands(self):
         style = "padding-top:8px;padding-right:0px;padding-bottom:0px;padding-left:0px;"
-        self.assertEqual(compact_template_style(style), "padding:8px 0px 0px;")
+        self.assertEqual(compact_template_style(style), "padding:8px 0 0;")
 
     def test_shorthand_override_not_erased(self):
         style = "".join(f"border-{side}-{kind}:{value};" for side in ("top", "right", "bottom", "left")
                         for kind, value in (("width", "0px"), ("style", "solid"), ("color", "red")))
         style += "border-left:6px solid green;"
-        self.assertIn("border-left:6px solid green;", compact_template_style(style))
-        self.assertNotIn("border:0;", compact_template_style(style))
+        result = compact_template_style(style)
+        self.assertIn("border-width:0 0 0 6px;", result)
+        self.assertIn("border-color:red red red green;", result)
+        self.assertNotIn("border:0;", result)
+
+    def test_border_resolution_follows_source_order(self):
+        style = "border:1px solid red;border-color:blue;border-left:6px dashed green;"
+        result = compact_template_style(style)
+        # This short input is already smaller; keep it rather than expanding.
+        self.assertEqual(result, style)
+        long = style + "border-left-width:2px;"
+        result = compact_template_style(long)
+        self.assertEqual(result, long)
+
+    def test_font_family_serialization_stays_compatible_with_renderer(self):
+        source = '<p style="font-family:&#x27;PingFang SC&#x27;;"><span leaf="">正文。</span></p>'
+        result = clean_template_styles(source)
+        self.assertIn("font-family:&#x27;PingFang SC&#x27;;", result)
+        quoted = '<p style="font-family:&quot;A&amp;B&quot;;">text</p>'
+        self.assertIn('&quot;A&amp;B&quot;', clean_template_styles(quoted))
+
+    def test_zero_units_do_not_touch_strings_urls_or_flex_basis(self):
+        style = "padding:0px 12px;flex:1 1 0%;background:url('0px.png');"
+        result = compact_template_style(style)
+        self.assertIn("padding:0 12px;", result)
+        self.assertIn("flex:1 1 0%;", result)
+        self.assertIn("url('0px.png')", result)
+
+    def test_only_transparent_shadow_layers_are_removed(self):
+        style = "box-shadow:rgba(0,0,0,0.0) 0px 0px 0px 0px, rgba(0,0,0,0.05) 0px 1px 2px 0px;"
+        result = compact_template_style(style)
+        self.assertEqual(result, "box-shadow:rgba(0,0,0,0.05) 0 1px 2px 0;")
 
     def test_table_retains_inheritance_boundary(self):
         result = clean_template_styles('<section style="color:red;line-height:24px;"><table style="color:red;line-height:24px;"><tr><td>text</td></tr></table></section>')

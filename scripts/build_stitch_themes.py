@@ -56,13 +56,121 @@ def declarations(style):
             for part in parts if ":" in part]
 
 
+def css_tokens(value):
+    """Keep functional colors together while splitting simple border values."""
+    return re.findall(r"[a-zA-Z-]+\([^()]*\)|#[\da-fA-F]+|[^\s]+", value)
+
+
+def equivalent_border(pairs):
+    """Resolve known border declarations in source order, or leave them alone."""
+    sides = ("top", "right", "bottom", "left")
+    kinds = ("width", "style", "color")
+    styles = {"none", "hidden", "dotted", "dashed", "solid", "double",
+              "groove", "ridge", "inset", "outset"}
+    state = {side: {} for side in sides}
+    used = []
+    for index, (key, value) in enumerate(pairs):
+        if not key.startswith("border") or key.startswith("border-radius"):
+            continue
+        if key.startswith("border-image"):
+            return pairs
+        suffix = key.removeprefix("border").lstrip("-")
+        targets = sides
+        if suffix in sides or not suffix:
+            targets = (suffix,) if suffix else sides
+            # Common border shorthands reset unspecified width/style/color.
+            result = {"width": "medium", "style": "none", "color": "currentcolor"}
+            for token in css_tokens(value):
+                if token in styles:
+                    result["style"] = token
+                elif re.fullmatch(r"(?:0|[\d.]+(?:px|em|rem)|thin|medium|thick)", token):
+                    result["width"] = token
+                elif re.fullmatch(r"#[\da-fA-F]{3,8}|rgba?\([^()]*\)|[a-zA-Z]+", token):
+                    if token in {"inherit", "initial", "unset", "revert"}:
+                        return pairs
+                    result["color"] = token
+                else:
+                    return pairs
+            for side in targets:
+                state[side].update(result)
+        elif suffix in kinds:
+            tokens = css_tokens(value)
+            if not 1 <= len(tokens) <= 4:
+                return pairs
+            tokens = (tokens * 4)[:4] if len(tokens) in {1, 2} else (
+                [tokens[0], tokens[1], tokens[2], tokens[1]] if len(tokens) == 3 else tokens)
+            for side, token in zip(sides, tokens):
+                state[side][suffix] = token
+        elif any(suffix == side + "-" + kind for side in sides for kind in kinds):
+            side, kind = suffix.split("-", 1)
+            state[side][kind] = value
+        else:
+            # Corner radii and unsupported border forms are not touched.
+            continue
+        used.append(index)
+    if not used or any(set(state[side]) != set(kinds) for side in sides):
+        return pairs
+    if any(value in {"inherit", "initial", "unset", "revert", "revert-layer"}
+           or "var(" in value for data in state.values() for value in data.values()):
+        return pairs
+    if all(state[side] == state[sides[0]] for side in sides):
+        data = state[sides[0]]
+        # Keep invisible style/color too, so later border overrides behave alike.
+        replacement = [("border", f'{data["width"]} {data["style"]} {data["color"]}')]
+    else:
+        replacement = [("border-" + kind, short_box([state[side][kind] for side in sides]))
+                       for kind in kinds]
+    # Border shorthand resets border-image; absence above makes this safe for the
+    # static self-contained libraries. Do not rewrite a group unless it is smaller.
+    original = sum(len(pairs[i][0]) + len(pairs[i][1]) + 2 for i in used)
+    if sum(len(k) + len(v) + 2 for k, v in replacement) >= original:
+        return pairs
+    return [pair for i, pair in enumerate(pairs) if i not in used] + replacement
+
+
+ZERO_LENGTH_PROPERTIES = {
+    "margin", "padding", "width", "height", "min-width", "max-width",
+    "min-height", "max-height", "gap", "row-gap", "column-gap", "border",
+    "border-width", "border-radius", "box-shadow", "letter-spacing",
+}
+
+
+def compact_css_value(key, value):
+    if key == "font-family":
+        return re.sub(r"\s*,\s*", ",", value).strip()
+    if key == "box-shadow":
+        # Remove only the exact transparent, zero-size layers in source exports.
+        value = re.sub(r"(?:^|(?<=,))\s*rgba\(0,0,0,0(?:\.0)?\)\s+0px\s+0px\s+0px\s+0px\s*,\s*",
+                       "", value)
+    if key in ZERO_LENGTH_PROPERTIES or re.fullmatch(
+        r"(?:margin|padding)-(?:top|right|bottom|left)|border-(?:top|right|bottom|left)(?:-width)?",
+        key,
+    ):
+        # Never change strings, URL tokens or functions such as calc().
+        tokens = re.split(r'("[^"]*"|\'[^\']*\'|[a-zA-Z-]+\([^)]*\))', value)
+        for i in range(0, len(tokens), 2):
+            tokens[i] = re.sub(r"(?<![\w.#-])0px\b", "0", tokens[i])
+        value = "".join(tokens)
+    return value
+
+
+def escape_style_attribute(value):
+    """Keep font-family serialization stable for the existing card assembler."""
+    if "font-family:" in value:
+        # The renderer extracts prose typography from serialized style strings.
+        # Changing font-family quoting affects that legacy extraction and can
+        # change inline text metrics. Preserve it until that path is redesigned.
+        return html.escape(value, quote=True)
+    return html.escape(value, quote=False).replace('"', "&quot;")
+
+
 def compact_template_style(style):
     pairs = declarations(style)
     # Unknown/custom CSS is not rewritten: these optimizations target the built-in
     # templates, not arbitrary cascading styles or important declarations.
     if any("!important" in value or key.startswith("--") for key, value in pairs):
         return style
-    props = dict(pairs)
+    props = dict(equivalent_border(pairs))
     for key, default in {
         "opacity": "1", "box-shadow": "none", "align-items": "normal",
         "justify-content": "normal", "gap": "normal",
@@ -104,14 +212,8 @@ def compact_template_style(style):
             # Fully specified longhands override an earlier shorthand.
             props.pop(base, None)
             props[base] = short_box(values)
-    # Font-family lists may be formatted over multiple lines. No quote contents
-    # or code/text nodes are minified.
-    def min_value(key, value):
-        if key == "font-family":
-            value = re.sub(r"\s*,\s*", ",", value)
-            return value.strip()
-        return value
-    return ";".join(key + ":" + min_value(key, value) for key, value in props.items()) + ";"
+    return ";".join(key + ":" + compact_css_value(key, value)
+                    for key, value in props.items()) + ";"
 
 
 def short_box(values):
@@ -160,7 +262,7 @@ class TemplateStyleCleaner(HTMLParser):
             else:
                 effective = {}
             raw = re.sub(r"\bstyle\s*=\s*(\"[^\"]*\"|'[^']*')",
-                         lambda _: 'style="' + html.escape(compact, quote=True) + '"',
+                         lambda _: 'style="' + escape_style_attribute(compact) + '"',
                          raw, count=1)
         self.output.append(raw)
         if tag not in VOID:

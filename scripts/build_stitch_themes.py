@@ -778,6 +778,21 @@ def icon_svg(name, size, color):
     return source.replace('<svg ', '<svg style="display:block;flex-shrink:0;" fill="%s" ' % color, 1)
 
 
+def semantic_palette(theme):
+    """Derive distinct semantic roles without changing the source color catalog."""
+    def mix(first, second, weight):
+        a = [int(first[i:i+2], 16) for i in (1, 3, 5)]
+        b = [int(second[i:i+2], 16) for i in (1, 3, 5)]
+        return "#" + "".join("%02X" % round(x * weight + y * (1 - weight))
+                             for x, y in zip(a, b))
+    return {
+        "card_surface": theme["surface"],
+        "emphasis_surface": mix(theme["accent"], theme["surface"], .55),
+        "highlight_surface": mix(theme["accent"], theme["surface"], .35),
+        "on_deep_muted": mix(theme["accent"], "#FFFFFF", .35),
+    }
+
+
 class Compiler:
     """A deliberately bounded compiler for the utilities used by these exports."""
 
@@ -789,12 +804,15 @@ class Compiler:
         self.colors.update(white="#FFFFFF", transparent="transparent")
         self.original = theme["id"] == "__source"
         if not self.original:
+            palette = semantic_palette(theme)
             for key in ("primary", "primary-container", "secondary", "on-primary-fixed-variant", "on-secondary-fixed-variant", "surface-tint"):
                 self.colors[key] = theme["primary"]
             for key in ("secondary-fixed-dim", "primary-fixed-dim", "inverse-primary"):
                 self.colors[key] = theme["accent"]
-            for key in ("surface-container-low", "secondary-container", "secondary-fixed", "primary-fixed"):
-                self.colors[key] = theme["surface"]
+            self.colors["surface-container-low"] = palette["card_surface"]
+            self.colors["secondary-container"] = palette["emphasis_surface"]
+            for key in ("secondary-fixed", "primary-fixed"):
+                self.colors[key] = palette["highlight_surface"]
             for key in ("on-secondary-container", "on-secondary-fixed", "on-primary-fixed"):
                 self.colors[key] = theme["deep"]
         self.colors.update({"#e6f4ea": "#e6f4ea" if self.original else theme["surface"],
@@ -804,10 +822,12 @@ class Compiler:
     def remap(self, value):
         if self.original:
             return value
-        replacements = dict(zip(original_tokens().values(), self.colors.values()))
+        replacements = {color: self.colors[token]
+                        for token, color in original_tokens().items()}
         replacements.update({"#062e24": self.theme["deep"], "#059669": self.theme["primary"],
                              "#10b981": self.theme["accent"], "#f2faf6": self.theme["surface"],
-                             "#005236": self.theme["primary"], "#a7f3d0": self.theme["surface"],
+                             "#005236": self.theme["primary"],
+                             "#a7f3d0": semantic_palette(self.theme)["on_deep_muted"],
                              "#34d399": self.theme["accent"], "#064e3b": self.theme["deep"],
                              "#e6f4ea": self.theme["surface"], "#a3e0be": self.theme["accent"],
                              "#047857": self.theme["primary"]})
@@ -1206,6 +1226,11 @@ def source_components():
                 result["signature_no_qr_"+slug] = no_qr
             elif name == "engagement":
                 text_slots(value,{"如果觉得有用，随手点个赞、在看、转发三连吧。":"message"})
+                value.children = [
+                    child for child in value.children
+                    if not (isinstance(child, Node) and
+                            child.text().strip() == "感谢阅读 · 原创排版设计分享")
+                ]
             result[name+"_"+slug]=value
         heading = next(main.nodes("h2"))
         container = heading

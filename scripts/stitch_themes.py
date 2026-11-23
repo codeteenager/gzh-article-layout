@@ -109,6 +109,8 @@ def component(theme_id, name, **fields):
                     r'\}\}</span></span>', "", value)
                 value = re.sub(
                     r'<span\b[^>]*>\{\{' + slot + r'\}\}</span>', "", value)
+    if name.startswith("signature") and not str(fields.get("bio", "")).strip():
+        value = re.sub(r'<p\b[^>]*><span leaf="">\{\{bio\}\}</span></p>', "", value)
     # Single substitution pass: user text cannot inject a second template slot.
     result = re.sub(
         r"\{\{([a-z_]+)\}\}",

@@ -62,8 +62,8 @@ class Renderer:
         self.theme = theme_by_id(theme)
         self.id = theme
         self.layout = layout or self.theme["layout"]
-        self.author = author
-        self.bio = bio
+        self.author = author.strip() if author else None
+        self.bio = bio.strip() if bio else None
         self.qr_url = safe_url(qr_url) if qr_url else None
         self.section_no = 0
         self.step_no = 0
@@ -396,14 +396,15 @@ class Renderer:
             if end:
                 content = content[:end] + toc + content[end:]
                 toc = ""
-        author = self.author or "{{作者名}}"
-        fields = dict(author=author, initial=author[0] if self.author else "作",
-                      bio=chinese_punctuation(self.bio or "{{简介}}"))
-        if self.qr_url:
-            footer = self.c("signature", _in_article=True, qr_url=self.qr_url, qr_caption="扫码关注",
-                            signature_note="长按右侧二维码关注专栏", **fields)
-        else:
-            footer = self.c("signature_no_qr_" + self.layout, _in_article=True, **fields)
+        footer = ""
+        if self.author:
+            fields = dict(author=self.author, initial=self.author[0],
+                          bio=chinese_punctuation(self.bio or ""))
+            if self.qr_url:
+                footer = self.c("signature", _in_article=True, qr_url=self.qr_url, qr_caption="扫码关注",
+                                signature_note="长按右侧二维码关注专栏", **fields)
+            else:
+                footer = self.c("signature_no_qr_" + self.layout, _in_article=True, **fields)
         notes = "".join(self.c("footnote", _in_article=True, number="[^" + n + "]", body_html=self.inline(text))
                         for n, text in self.footnotes.items())
         result = self.c("container", _in_article=True, body_html=cover + toc + content + notes + footer +

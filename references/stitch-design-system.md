@@ -59,3 +59,7 @@ python3 scripts/render_stitch_article.py assets/sample-article.md \
 - `docs/gallery/index.html`：15 色系 × 3 版式，同篇用户示例文章。
 - `docs/gallery/comparison.html`：Stitch 原始文章与内联还原，使用同一文章、同一原配色和同一视口，移除外部应用工具栏。用于定位真正的结构差异。
 - 对照页可以加载原稿字体；实际生成文章与主画廊不依赖外部字体。
+
+## 语义色层次
+
+主题编译不再将所有浅底色合并：`surface-container-low` 使用主题 surface；`secondary-container` 使用 55% accent 与 45% surface 混色；`secondary-fixed` / `primary-fixed` 使用 35% accent 与 65% surface 混色。深底简介 `#a7f3d0` 映射到 35% accent 与 65% 白色混色。这样在保留各主题色系的同时区分卡片、强调圆底、高亮及深底辅助文字。它是主题化的层次修复，不是将全部主题强制改为原稿绿色。原稿对照模式不做此换色；原始透明度保留。

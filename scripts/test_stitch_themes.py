@@ -130,8 +130,8 @@ class StitchTests(unittest.TestCase):
                     self.assertEqual(output.count("<figcaption"), 2)
                     self.assertNotIn("material-symbols", output)
                     self.assertNotIn("{{body_html}}", output)
-                    self.assertIn("{{作者名}}", text)
-                    self.assertIn("{{简介}}", text)
+                    self.assertNotIn("{{作者名}}", text)
+                    self.assertNotIn("{{简介}}", text)
                     self.assertEqual(text.count("第一段独特内容"), 1)
 
     def test_layout_identity_not_just_palette(self):
@@ -161,6 +161,22 @@ class StitchTests(unittest.TestCase):
             self.assertNotIn("甲木 × 摸鱼小李", Text(output).text())
         with self.assertRaises(ValueError):
             Renderer(qr_url="javascript:alert(1)")
+
+    def test_signature_requires_author_and_has_no_placeholder_or_empty_bio(self):
+        for layout in LAYOUTS:
+            for author in (None, "", " \t"):
+                output = Renderer("emerald", layout, author=author,
+                                  bio="只有简介", qr_url="https://example.com/qr.png").render("# 标题")
+                self.assertNotIn("只有简介", output)
+                self.assertNotIn("https://example.com/qr.png", output)
+                self.assertIn("既然看到这里了", output)
+            for bio in (None, "", " \t"):
+                output = Renderer("emerald", layout, author="张三", bio=bio).render("# 标题")
+                self.assertIn("张三", output)
+                self.assertNotIn("{{简介}}", output)
+                self.assertNotIn("{{作者名}}", output)
+                self.assertNotRegex(output, r'<p\b[^>]*><span leaf=""></span></p>')
+                self.assertNotIn("扫码关注", output)
 
     def test_share_icons_and_labels_are_not_substituted(self):
         for layout in LAYOUTS:
@@ -258,6 +274,35 @@ class StitchTests(unittest.TestCase):
 
 
 class TemplateStyleTests(unittest.TestCase):
+    def test_engagement_has_no_design_credit(self):
+        for theme in catalog():
+            for layout in LAYOUTS:
+                output = templates(theme["id"])["engagement_" + layout]
+                self.assertNotIn("感谢阅读 · 原创排版设计分享", output)
+                for label in ("点赞", "在看", "转发", "既然看到这里了"):
+                    self.assertIn(label, Text(output).text())
+
+    def test_semantic_colors_keep_distinct_background_and_deep_text_roles(self):
+        from build_stitch_themes import semantic_palette
+        for theme in catalog():
+            palette = semantic_palette(theme)
+            self.assertEqual(len(set(palette.values())), 4)
+            compiler = Compiler(theme)
+            self.assertEqual(compiler.remap("#eff3ff"), theme["surface"])
+            self.assertEqual(compiler.remap("#6cf8bb"), palette["emphasis_surface"])
+            self.assertEqual(compiler.remap("#a7f3d0"), palette["on_deep_muted"])
+            self.assertEqual(compiler.remap("rgba(108,248,187,0.4)"),
+                             "rgba(%s,0.4)" % ",".join(str(int(
+                                 palette["emphasis_surface"][i:i+2], 16))
+                                 for i in (1, 3, 5)))
+            data = templates(theme["id"])
+            for layout in LAYOUTS:
+                engagement = data["engagement_" + layout + "_in_article"].lower()
+                self.assertIn("background:" + palette["card_surface"].lower(), engagement)
+                self.assertIn("background:" + palette["emphasis_surface"].lower(), engagement)
+                signature = data["signature_" + layout + "_in_article"].lower()
+                self.assertIn("color:" + palette["on_deep_muted"].lower(), signature)
+
     def test_ordered_badge_centers_on_first_line_not_entire_item(self):
         from html import unescape
         from stitch_themes import declarations

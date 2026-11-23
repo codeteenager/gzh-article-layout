@@ -229,11 +229,28 @@ class StitchTests(unittest.TestCase):
 
 
 class TemplateStyleTests(unittest.TestCase):
-    def test_templates_keep_explicit_typography(self):
+    def test_component_root_keeps_typography_and_children_inherit(self):
         source = '<section style="color:red;font-size:14px;"><p style="color:red;font-size:14px;"><span leaf="">正文。</span></p></section>'
         result = clean_template_styles(source)
-        self.assertEqual(result.count("color:red;"), 2)
-        self.assertEqual(result.count("font-size:14px;"), 2)
+        self.assertEqual(result.count("color:red;"), 1)
+        self.assertEqual(result.count("font-size:14px;"), 1)
+
+    def test_separate_component_roots_never_share_typography(self):
+        source = '<section style="color:red;">{{body_html}}</section>'
+        self.assertIn("color:red;", clean_template_styles(source))
+        self.assertIn("color:red;", clean_template_styles(source))
+
+    def test_heading_keeps_native_typography_and_child_overrides(self):
+        source = '<section style="font-weight:400;color:red;"><h3 style="font-weight:400;color:red;"><span style="color:blue;">文字</span></h3></section>'
+        result = clean_template_styles(source)
+        self.assertIn('<h3 style="font-weight:400;color:red;">', result)
+        self.assertIn('color:blue;', result)
+
+    def test_relative_font_sizes_are_not_deduplicated(self):
+        # Relative sizes compose; matching strings do not imply equal appearance.
+        for value in ("1.2em", "120%"):
+            source = f'<section style="font-size:{value};"><span style="font-size:{value};">文字</span></section>'
+            self.assertEqual(clean_template_styles(source).count(f"font-size:{value};"), 2)
 
     def test_renderer_only_assembles_templates(self):
         import inspect

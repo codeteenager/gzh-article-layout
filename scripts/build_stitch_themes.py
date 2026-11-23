@@ -19,6 +19,16 @@ SOURCE = ROOT / "assets/stitch"
 VOID = {"img", "br", "hr", "meta", "link", "input"}
 FONT = "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif"
 MONO = "'JetBrains Mono','SF Mono',Consolas,Monaco,monospace"
+INHERITED_TYPOGRAPHY = {
+    "font-family", "font-size", "font-weight", "font-style", "line-height",
+    "letter-spacing", "color", "text-align", "overflow-wrap",
+}
+# These native elements may introduce UA typography or table inheritance resets.
+# Always keep their own declarations, even when an ancestor has the same value.
+TYPOGRAPHY_BOUNDARIES = {
+    "h1", "h2", "h3", "h4", "h5", "h6", "table", "th", "code", "pre",
+    "strong", "b", "em", "i", "small", "sub", "sup", "button", "input",
+}
 
 
 def declarations(style):
@@ -114,26 +124,59 @@ def short_box(values):
 
 
 class TemplateStyleCleaner(HTMLParser):
-    """Clean static template styles without inferring runtime inheritance."""
+    """Reuse typography only inside one static component, never across slots."""
 
     def __init__(self):
         super().__init__(convert_charrefs=False)
         self.output = []
+        self.stack = []
 
     def handle_starttag(self, tag, attrs):
         raw = self.get_starttag_text()
         style = dict(attrs).get("style")
+        inherited = dict(self.stack[-1][1]) if self.stack else {}
+        effective = dict(inherited)
+        if tag in TYPOGRAPHY_BOUNDARIES:
+            # Unknown native defaults must not be propagated to descendants.
+            effective = {}
         if style is not None:
+            compact = compact_template_style(style)
+            pairs = declarations(compact)
+            props = dict(pairs)
+            if not any(key in props for key in ("font", "all")) and not any(
+                "!important" in value or "var(" in value or value in {
+                    "inherit", "initial", "unset", "revert", "revert-layer"
+                } for _, value in pairs
+            ):
+                effective.update({key: value for key, value in pairs
+                                  if key in INHERITED_TYPOGRAPHY})
+                if tag not in TYPOGRAPHY_BOUNDARIES:
+                    pairs = [(key, value) for key, value in pairs
+                             if key not in INHERITED_TYPOGRAPHY or
+                             value != inherited.get(key) or
+                             (key in {"font-size", "letter-spacing", "line-height"}
+                              and re.search(r"(?:em|ex|ch|lh)\b|%", value))]
+                compact = ";".join(key + ":" + value for key, value in pairs) + ";"
+            else:
+                effective = {}
             raw = re.sub(r"\bstyle\s*=\s*(\"[^\"]*\"|'[^']*')",
-                         lambda _: 'style="' + html.escape(compact_template_style(style), quote=True) + '"',
+                         lambda _: 'style="' + html.escape(compact, quote=True) + '"',
                          raw, count=1)
         self.output.append(raw)
+        if tag not in VOID:
+            self.stack.append((tag, effective))
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs)
+        if tag not in VOID:
+            self.stack.pop()
 
     def handle_endtag(self, tag):
         self.output.append("</" + tag + ">")
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
 
     def handle_data(self, data):
         self.output.append(data)

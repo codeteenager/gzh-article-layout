@@ -13,11 +13,9 @@ from stitch_themes import ROOT, LAYOUTS, LAYOUT_NAMES, catalog
 def build():
     output = ROOT / "docs/gallery"
     source = (ROOT / "assets/sample-article.md").read_text(encoding="utf-8")
-    # Select the footer QR, not an article illustration.
-    qr_url = next(n.attrs["src"] for n in load("ruler").nodes("img") if n.attrs.get("alt") == "WeChat QR Code")
     for theme in catalog():
         for layout in LAYOUTS:
-            content = Renderer(theme["id"], layout, qr_url=qr_url).render(source)
+            content = Renderer(theme["id"], layout).render(source)
             # The browser shell is not copied. Charset/viewport are essential when
             # opening a fragment as a standalone file, particularly on mobile.
             page = ('<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
@@ -50,7 +48,7 @@ iframe{display:block;border:0;width:100%;height:650px;background:white}.scene{pa
 <p><a href="../product-guide.md">查看产品使用指南与交付检查清单 →</a></p>
 <p class="notice">墨规：编号微标尺 · 浮光：透叠大数字 · 素墨：克制留白。原稿已转换为内联样式；这里不使用 Tailwind 或外部字体。</p>
 <p><a href="comparison.html">查看来源设计稿逐项对照（同文同色） →</a></p>
-<p class="notice">下方名片已恢复二维码右栏；设计稿图片链接要求 Google 登录，当前未登录预览可能为空。真实文章需 --qr-url 提供自己的二维码，否则输出无二维码变体。</p>
+<p class="notice">下方按当前默认规则生成：未提供作者时不显示名片；有作者时，简介和真实二维码按实际提供内容展示，不输出占位信息。</p>
 <div class="controls"><button type="button" data-all="default" aria-pressed="true">色系默认版式</button>
 <button type="button" data-all="ruler" aria-pressed="false">全部墨规</button>
 <button type="button" data-all="overprint" aria-pressed="false">全部浮光</button>

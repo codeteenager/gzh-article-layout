@@ -406,7 +406,7 @@ class TemplateStyleTests(unittest.TestCase):
                  "border:0 solid #e5e7eb;border-radius:0;padding:0;"
                  "margin-top:0;margin-bottom:0;box-sizing:border-box;")
         result = compact_template_style(style, tag="section", minimal=True)
-        self.assertEqual(result, "border:0;margin:0;")
+        self.assertEqual(result, ";")
         paragraph = compact_template_style(style, tag="p", minimal=True)
         self.assertIn("display:block;", paragraph)
         self.assertIn("padding:0;", paragraph)
@@ -494,7 +494,7 @@ class TemplateStyleTests(unittest.TestCase):
             data = templates(theme["id"])
             self.assertIn("font-size:14px;", data["hero_ruler"])
             self.assertNotIn("font-size:14px;", data["hero_ruler_in_article"].split(">", 1)[0])
-            self.assertIn("font-family:", data["toc_item_ruler"])
+            self.assertNotIn("font-family:", data["toc_item_ruler"].split(">", 1)[0])
             self.assertNotIn("font-family:", data["toc_item_ruler_in_toc"].split(">", 1)[0])
         standalone = Renderer().blocks(["## 章节"])
         article = Renderer().blocks(["## 章节"], prose_cards=True)
@@ -513,13 +513,15 @@ class TemplateStyleTests(unittest.TestCase):
             for key in ("unordered_item", "ordered_item", "task_item"):
                 standalone = data[key].split(">", 1)[0]
                 variant = data[key + "_in_list"].split(">", 1)[0]
-                self.assertIn("font-family:", standalone)
+                self.assertNotIn("font-family:", standalone)
                 self.assertNotIn("font-family:", variant)
-                self.assertIn("font-family", parent)
+                self.assertNotIn("font-family", parent)
                 self.assertIn("line-height", parent)
         output = Renderer().blocks(["- 项目", "  - 子项", "1. 数字", "- [x] 完成"])
         self.assertEqual(Text(output).text(), "项目子项01数字✓完成")
-        self.assertIn("font-family:", output)  # one per list, not one per item
+        # Only the intentionally monospace ordered-list number overrides it.
+        self.assertNotIn("font-family:Inter,", output)
+        self.assertIn("monospace;", output)
 
     def test_inherited_compiler_context_respects_native_boundaries(self):
         contract = {"font-family": "Inter,sans-serif", "color": "red",
@@ -543,7 +545,7 @@ class TemplateStyleTests(unittest.TestCase):
             value = compact_template_style("box-sizing:border-box;border:0;min-width:0;",
                                             tag=tag, minimal=True)
             self.assertNotIn("box-sizing:", value)
-            self.assertIn("border:0;", value)
+            self.assertNotIn("border:", value)
         self.assertEqual(compact_template_style(
             "flex:0 0 auto;flex-shrink:0;", minimal=True), "flex:none;")
 
@@ -566,14 +568,24 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertEqual(allocate_template_fonts(inherited), inherited)
         self.assertEqual(allocate_template_fonts(value), value)
 
-    def test_article_font_contract_does_not_change_public_container(self):
+    def test_article_font_is_global_with_only_monospace_component_exceptions(self):
         for theme in catalog():
             data = templates(theme["id"])
             self.assertIn("font-family:-apple-system", data["container"])
-            self.assertIn("font-family:Inter,-apple-system", data["container_in_article"])
-            self.assertIn("font-family:-apple-system", data["divider_in_article"])
-            self.assertNotIn("font-family:Inter,", data["list_with_items_in_article"])
-            self.assertIn("font-family:Inter,", data["list_with_items"])
+            self.assertEqual(data["container"], data["container_in_article"])
+            for key, value in data.items():
+                if key in {"container", "container_in_article"}:
+                    continue
+                for font in re.findall(r"font-family:([^;]+);", value):
+                    self.assertIn("monospace", font, (theme["id"], key, font))
+            self.assertNotIn("font-family:", data["paragraph"])
+            self.assertNotIn("font-family:", data["divider_in_article"])
+            self.assertIn("monospace;", data["code_row"])
+        output = Renderer().render(ARTICLE)
+        self.assertEqual(output.count("font-family:-apple-system"), 1)
+        from render_stitch_article import inherit_paragraphs
+        self.assertNotIn("overflow-wrap:", inherit_paragraphs(
+            component("emerald", "paragraph", body_html="正文")))
 
     def test_typography_allocation_keeps_paint_and_runtime_boundaries(self):
         from build_stitch_themes import allocate_template_fonts
@@ -672,7 +684,30 @@ class TemplateStyleTests(unittest.TestCase):
         source = '<span style="box-sizing:border-box;min-width:24px;border:0;">x</span>'
         value = clean_template_styles(source, minimal=True)
         self.assertNotIn("box-sizing:", value)
-        self.assertIn("border:0;", value)
+        self.assertNotIn("border:", value)
+
+    def test_default_removal_preserves_native_resets_and_shorthand_boundaries(self):
+        plain = ("margin:0;border:0;position:static;float:none;clear:none;"
+                 "order:0;flex-wrap:nowrap;flex-grow:0;flex-shrink:1;overflow:visible;")
+        self.assertEqual(compact_template_style(plain, tag="section", minimal=True), ";")
+        for tag in ("h2", "p", "blockquote"):
+            self.assertIn("margin:0;", compact_template_style(
+                "margin:0;", tag=tag, minimal=True))
+        for tag in ("img", "table", "button"):
+            self.assertIn("border:0;", compact_template_style(
+                "border:0;", tag=tag, minimal=True))
+        for style, declaration in (
+            ("border:0;border-left:2px solid red;", "border:0;"),
+            ("border:0;border-image:url(a.png) 1;", "border:0;"),
+            ("margin:8px;margin-left:0;", "margin-left:0;"),
+            ("margin-left:8px;margin:0;", "margin:0;"),
+            ("margin-inline:8px;margin-left:0;", "margin-left:0;"),
+            ("flex:1;flex-grow:0;", "flex-grow:0;"),
+            ("flex-flow:column wrap;flex-wrap:nowrap;", "flex-wrap:nowrap;"),
+            ("overflow:visible;overflow-x:hidden;", "overflow:visible;"),
+        ):
+            self.assertIn(declaration, compact_template_style(
+                style, tag="section", minimal=True))
 
     def test_assembled_code_and_list_have_explicit_parent_contracts(self):
         for theme in catalog():

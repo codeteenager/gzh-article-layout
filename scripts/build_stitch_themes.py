@@ -191,6 +191,41 @@ def compact_template_style(style, tag=None, minimal=False):
     if minimal:
         # This final compiler pass runs AFTER structure merging, which relies on
         # explicit source defaults. Never apply it to arbitrary author HTML.
+        if "all" not in props:
+            # Non-inherited initial values on ordinary template boxes. Keep
+            # shorthand/longhand interactions and native UA resets explicit.
+            for key, default in {
+                "position": "static", "float": "none", "clear": "none",
+                "order": "0", "flex-wrap": "nowrap",
+            }.items():
+                if props.get(key) == default and not (
+                        key == "flex-wrap" and "flex-flow" in props):
+                    del props[key]
+            if "flex" not in props:
+                for key, default in (("flex-grow", "0"), ("flex-shrink", "1")):
+                    if props.get(key) == default:
+                        del props[key]
+            if props.get("overflow") == "visible" and not any(
+                    key in props for key in ("overflow-x", "overflow-y")):
+                del props["overflow"]
+            if tag in {"section", "span"}:
+                for key in ("margin", "margin-top", "margin-right",
+                            "margin-bottom", "margin-left"):
+                    if props.get(key) in {"0", "0px"} and (
+                            (key == "margin" and not any(
+                                name.startswith("margin-") for name in props)) or
+                            (key != "margin" and "margin" not in props and not any(
+                                name.startswith(("margin-inline", "margin-block"))
+                                for name in props))):
+                        del props[key]
+            if tag in {"section", "span", "p"} and (
+                    props.get("border") in {"0", "0px", "none"} or
+                    re.fullmatch(r"0(?:px)? solid #[\da-fA-F]{6}", props.get("border", ""))):
+                # These tags have no native border. Do not drop resets that
+                # interact with side borders or border-image painting.
+                if not any(key.startswith("border-") and key != "border-radius"
+                           for key in props):
+                    del props["border"]
         if re.fullmatch(r"0(?:px)? solid #[\da-fA-F]{6}", props.get("border", "")):
             if not any(key.startswith("border-") and key != "border-radius"
                        for key in props):
@@ -212,12 +247,6 @@ def compact_template_style(style, tag=None, minimal=False):
                 del props["display"]
             if props.get("padding") in {"0", "0px"}:
                 del props["padding"]
-            if (props.get("margin-top") in {"0", "0px"} and
-                    props.get("margin-bottom") in {"0", "0px"} and
-                    not any(key in props for key in ("margin", "margin-left", "margin-right"))):
-                del props["margin-top"]
-                del props["margin-bottom"]
-                props["margin"] = "0"
         if tag == "span":
             for key in ("padding", "margin", "margin-top", "margin-bottom"):
                 if (props.get(key) == "0" and not
@@ -957,6 +986,11 @@ class Compiler:
                     styles[k.strip()] = v.strip()
         for key, value in list(styles.items()):
             styles[key] = self.remap(value)
+        # Normal article typography belongs to the global container, not to
+        # each exported design node. Keep deliberate monospace exceptions.
+        # The source-comparison renderer must still reproduce the source fonts.
+        if not self.original and "monospace" not in styles.get("font-family", "").lower():
+            styles.pop("font-family", None)
         if grid_child:
             styles.update({"flex":"1 1 0%", "min-width":"0"})
         # Preserve ornament geometry without unsupported absolute positioning.
@@ -1279,19 +1313,12 @@ def compile_templates(theme, nodes):
         'style="', 'style="' + escape_style_attribute(extra), 1)
     for key in item_names:
         result[key + "_in_list"] = inherited_variant(result[key], shared)
-    # The assembled article is predominantly Inter. Keep the public container
-    # unchanged, and use an explicit article contract rather than modifying the
-    # completed HTML. Components remain independently usable.
-    system_font = compact_css_value("font-family", FONT)
-    article_font = "Inter," + system_font
-    result["container_in_article"] = result["container"].replace(
-        "font-family:" + system_font + ";", "font-family:" + article_font + ";")
-    contract["font-family"] = article_font
+    # All normal components inherit the single global system-font stack.
+    # Standalone components should be placed inside this container as well.
+    result["container_in_article"] = result["container"]
     direct += ["step", "code", "code_with_rows", "image", "table", "divider", "list_with_items"]
     for key in direct:
         value = result[key]
-        if key == "divider":
-            value = value.replace('style="', 'style="font-family:' + system_font + ";", 1)
         result[key + "_in_article"] = inherited_variant(value, contract)
     # A sole ordinary paragraph can own the card's painted box. Use a named
     # assembly contract, never flatten arbitrary cards or mixed block content.
@@ -1336,6 +1363,7 @@ def reference(theme, templates):
         "> 设计基于 Magazine Markdown Converter 的来源稿；配色取自 15 款色系表。",
         "> 三版式取自 ruler / overprint / pure；通用语法组件取自组件设计稿。原稿保存在 assets/stitch/。",
         "> 下列 HTML 已内联、叶节点封装、移除网页交互；不要直接复制原始 HTML。",
+        "> 普通字体仅在全局 `container` 定义，组件需放在该容器内继承；代码与刻意等宽的编号保留局部字体。字号、字重和行高仍按组件设计。",
         "> `*_html` 字段仅放入已转换且校验通过的组件，其余字段按纯文本转义。", "",
         "## 设计变量速查表", "",
         "| 角色 | 值 |", "|---|---|",

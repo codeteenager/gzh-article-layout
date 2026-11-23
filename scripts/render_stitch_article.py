@@ -43,10 +43,13 @@ def inherit_paragraphs(value):
         pairs = declarations(html.unescape(match[1]))
         removed = {"font-family", "font-size", "font-weight", "line-height",
                    "letter-spacing", "color"}
+        props = dict(pairs)
         # Generic card paragraphs inherit wrapping too. The old entity-broken
         # font removal swallowed this declaration; do not activate it now.
-        if any(key == "font-family" and ("'" in val or '"' in val or "PingFang SC" in val)
-               for key, val in pairs):
+        if (any(key == "font-family" and ("'" in val or '"' in val or "PingFang SC" in val)
+                for key, val in pairs) or
+                ("font-family" not in props and props.get("font-size") == "14px"
+                 and props.get("line-height") == "26.6px")):
             removed.add("overflow-wrap")
         style = ";".join(key + ":" + ("0" if key == "margin" else val)
                          for key, val in pairs if key not in removed) + ";"

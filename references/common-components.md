@@ -6,7 +6,7 @@
 
 | 输入 | 首选组件 |
 |---|---|
-| 围栏代码 | code + code_row，macOS 顶栏与行号，逐行 p；NBSP 或全角空格保持缩进，不用 white-space:pre |
+| 围栏代码 | code + code_row，保留 macOS 顶栏；每行一个普通 p，无行号列；NBSP 保持缩进，不用 white-space:pre |
 | 行内代码 | 主题纸底等宽 span，正文引号归一化不影响代码 |
 | 图片 / GIF | image，保留原始 src；图注仅来自 alt，GIF 图注注明动图 |
 | 标题 / 引用 / 金句 | chapter / step / quote / pullquote |

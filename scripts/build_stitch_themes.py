@@ -1131,10 +1131,9 @@ def source_components():
     slot(leaves[-1], "language")
     body.children = ["{{rows_html}}"]
     body.attrs["style"] = "display:block;padding:14px;overflow-wrap:anywhere;"
-    result["code_row"] = Node("p", {"style": "margin:0;display:flex;gap:12px;font-family:" + MONO +
+    result["code_row"] = Node("p", {"style": "margin:0;font-family:" + MONO +
                                  ";font-size:13px;line-height:1.6;overflow-wrap:anywhere;"},
-                              [Node("span", {"style": "color:#94A3B8;min-width:24px;flex-shrink:0;"}, ["{{number}}"]),
-                               Node("span", {"style": "min-width:0;overflow-wrap:anywhere;"}, ["{{line}}"])])
+                              ["{{line}}"])
     lists = demo(7).elements()
     for key, index in (("unordered_item", 0), ("ordered_item", 1), ("task_item", 2)):
         panel = lists[index]
@@ -1243,6 +1242,15 @@ def source_components():
 def compile_templates(theme, nodes):
     compiler = Compiler(theme)
     result = {key: compiler.render(value) for key, value in nodes.items()}
+    # Step headings have no outer card; preserve the numbered badge and text.
+    # The source-comparison renderer remains untouched.
+    def unframe_step(match):
+        pairs = declarations(html.unescape(match[1]))
+        style = ";".join(key + ":" + value for key, value in pairs
+                         if key != "box-sizing" and not key.startswith(
+                             ("background", "border", "padding", "box-shadow"))) + ";"
+        return 'style="' + escape_style_attribute(style) + '"'
+    result["step"] = re.sub(r'style="([^"]*)"', unframe_step, result["step"], count=1)
     # Dynamic markup must replace the wrapping leaf span, not nest block HTML in it.
     for key, value in result.items():
         result[key] = re.sub(r'<span leaf="">(\{\{[a-z_]+_html\}\})</span>', r"\1", value)
@@ -1275,7 +1283,7 @@ def compile_templates(theme, nodes):
         result = {key: clean_template_styles(
             allocate_template_fonts(value, property_name=property_name), minimal=True)
                   for key, value in result.items()}
-    # The deterministic code assembler always supplies flex rows. Own their
+    # The deterministic code assembler supplies plain paragraphs. Own their
     # shared line-height in the existing scrolling body, not in every row.
     # Leave the standalone frame and standalone row contracts unchanged.
     def code_body(match):
@@ -1290,7 +1298,7 @@ def compile_templates(theme, nodes):
             key: val for key, val in contract.items() if key in INHERITED_TYPOGRAPHY})
     contract = dict(declarations(html.unescape(
         re.search(r'style="([^"]*)"', result["container"])[1])))
-    direct = ["prose_card", "footnote"]
+    direct = ["paragraph", "prose_card", "footnote"]
     for layout in ("ruler", "overprint", "pure"):
         direct += [name + "_" + layout for name in (
             "hero", "quote", "chapter", "toc", "signature", "signature_no_qr", "engagement")]
@@ -1364,6 +1372,7 @@ def reference(theme, templates):
         "> 三版式取自 ruler / overprint / pure；通用语法组件取自组件设计稿。原稿保存在 assets/stitch/。",
         "> 下列 HTML 已内联、叶节点封装、移除网页交互；不要直接复制原始 HTML。",
         "> 普通字体仅在全局 `container` 定义，组件需放在该容器内继承；代码与刻意等宽的编号保留局部字体。字号、字重和行高仍按组件设计。",
+        "> 普通正文直接使用 `paragraph_in_article`，不默认套用背景、边框、阴影卡片；`prose_card` 仅为显式卡片需求保留。",
         "> `*_html` 字段仅放入已转换且校验通过的组件，其余字段按纯文本转义。", "",
         "## 设计变量速查表", "",
         "| 角色 | 值 |", "|---|---|",

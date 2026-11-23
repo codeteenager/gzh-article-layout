@@ -4,6 +4,7 @@
 > 三版式取自 ruler / overprint / pure；通用语法组件取自组件设计稿。原稿保存在 assets/stitch/。
 > 下列 HTML 已内联、叶节点封装、移除网页交互；不要直接复制原始 HTML。
 > 普通字体仅在全局 `container` 定义，组件需放在该容器内继承；代码与刻意等宽的编号保留局部字体。字号、字重和行高仍按组件设计。
+> 普通正文直接使用 `paragraph_in_article`，不默认套用背景、边框、阴影卡片；`prose_card` 仅为显式卡片需求保留。
 > `*_html` 字段仅放入已转换且校验通过的组件，其余字段按纯文本转义。
 
 ## 设计变量速查表
@@ -30,7 +31,7 @@
 ### 步骤标题 · `step`
 
 ```html
-<section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;border-radius:12px;font-size:16px;line-height:24px;border:1px solid rgba(253,244,244,.6);padding:14px;margin:0 0 24px;background:rgba(253,244,244,.4);font-weight:400;letter-spacing:normal;color:#121c2a;"><section style="width:28px;height:28px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:26.6px;flex:none;background:#B91C1C;font-weight:700;letter-spacing:.5px;color:#fff;"><span leaf="">{{number}}</span></section><section style="display:flex;flex-direction:column;letter-spacing:.5px;"><span leaf="" style="font-size:14px;line-height:26.6px;font-weight:700;color:#450A0A;">{{title}}</span><span leaf="" style="font-size:12px;line-height:18px;color:#3d4a42;">{{subtitle}}</span></section></section>
+<section style="display:flex;align-items:center;gap:12px;font-size:16px;line-height:24px;margin:0 0 24px;font-weight:400;letter-spacing:normal;color:#121c2a;"><section style="width:28px;height:28px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:26.6px;flex:none;background:#B91C1C;font-weight:700;letter-spacing:.5px;color:#fff;"><span leaf="">{{number}}</span></section><section style="display:flex;flex-direction:column;letter-spacing:.5px;"><span leaf="" style="font-size:14px;line-height:26.6px;font-weight:700;color:#450A0A;">{{title}}</span><span leaf="" style="font-size:12px;line-height:18px;color:#3d4a42;">{{subtitle}}</span></section></section>
 ```
 
 ### 双向引号沉思卡 · `quote`
@@ -72,7 +73,7 @@
 ### 独立逐行代码 · `code_row`
 
 ```html
-<p style="margin:0;display:flex;gap:12px;font-size:13px;line-height:1.6;overflow-wrap:anywhere;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;"><span leaf="" style="min-width:24px;flex-shrink:0;color:#94A3B8;">{{number}}</span><span leaf="" style="min-width:0;">{{line}}</span></p>
+<p style="margin:0;font-size:13px;line-height:1.6;overflow-wrap:anywhere;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;"><span leaf="">{{line}}</span></p>
 ```
 
 ### 方标列表项 · `unordered_item`
@@ -324,7 +325,7 @@
 ### 代码视窗内逐行代码 · `code_row_in_frame`
 
 ```html
-<p style="margin:0;display:flex;gap:12px;line-height:1.6;"><span leaf="" style="min-width:24px;flex-shrink:0;color:#94A3B8;">{{number}}</span><span leaf="" style="min-width:0;">{{line}}</span></p>
+<p style="margin:0;line-height:1.6;"><span leaf="">{{line}}</span></p>
 ```
 
 ### 文章代码视窗（与共享行高的代码行配套） · `code_with_rows`
@@ -336,7 +337,7 @@
 ### 文章代码行（继承代码正文行高） · `code_row_in_rows`
 
 ```html
-<p style="margin:0;display:flex;gap:12px;"><span leaf="" style="min-width:24px;flex-shrink:0;color:#94A3B8;">{{number}}</span><span leaf="" style="min-width:0;">{{line}}</span></p>
+<p style="margin:0;"><span leaf="">{{line}}</span></p>
 ```
 
 ### toc_item_ruler（目录容器内） · `toc_item_ruler_in_toc`
@@ -355,6 +356,12 @@
 
 ```html
 <section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;flex-shrink:0;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#FDF4F4;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(185,28,28,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#B91C1C;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;margin:0;font-size:11px;line-height:17.875px;margin-top:4px;display:flow-root;margin-bottom:0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
+```
+
+### 正文段落（文章容器内） · `paragraph_in_article`
+
+```html
+<p style="margin:0 0 16px;font-weight:400;">{{body_html}}</p>
 ```
 
 ### prose_card（文章容器内） · `prose_card_in_article`
@@ -528,7 +535,7 @@
 ### 步骤标题（文章容器内） · `step_in_article`
 
 ```html
-<section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;border-radius:12px;font-size:16px;line-height:24px;border:1px solid rgba(253,244,244,.6);padding:14px;margin:0 0 24px;background:rgba(253,244,244,.4);font-weight:400;letter-spacing:normal;color:#121c2a;"><section style="width:28px;height:28px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:26.6px;flex:none;background:#B91C1C;font-weight:700;letter-spacing:.5px;color:#fff;"><span leaf="">{{number}}</span></section><section style="display:flex;flex-direction:column;letter-spacing:.5px;"><span leaf="" style="font-size:14px;line-height:26.6px;font-weight:700;color:#450A0A;">{{title}}</span><span leaf="" style="font-size:12px;line-height:18px;color:#3d4a42;">{{subtitle}}</span></section></section>
+<section style="display:flex;align-items:center;gap:12px;font-size:16px;line-height:24px;margin:0 0 24px;font-weight:400;letter-spacing:normal;color:#121c2a;"><section style="width:28px;height:28px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:26.6px;flex:none;background:#B91C1C;font-weight:700;letter-spacing:.5px;color:#fff;"><span leaf="">{{number}}</span></section><section style="display:flex;flex-direction:column;letter-spacing:.5px;"><span leaf="" style="font-size:14px;line-height:26.6px;font-weight:700;color:#450A0A;">{{title}}</span><span leaf="" style="font-size:12px;line-height:18px;color:#3d4a42;">{{subtitle}}</span></section></section>
 ```
 
 ### macOS 代码视窗（文章容器内） · `code_in_article`

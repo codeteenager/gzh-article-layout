@@ -315,6 +315,34 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertNotIn("monospace;", data["code_row_in_frame"])
         self.assertIn("line-height:1.6;", data["code_row_in_frame"])
         self.assertIn('leaf=""', data["code_row_in_frame"])
+        for theme in catalog():
+            for name in ("code_row", "code_row_in_frame", "code_row_in_rows"):
+                row = templates(theme["id"])[name]
+                self.assertTrue(row.startswith("<p "))
+                self.assertNotIn("{{number}}", row)
+                for prop in ("display:flex", "gap:", "min-width:", "flex-shrink:"):
+                    self.assertNotIn(prop, row)
+                self.assertEqual(row.count("<span"), 1)
+        value = Renderer().code("    first\n\nlast < & >", "txt", in_article=True)
+        self.assertEqual(value.count("<p "), 3)
+        self.assertIn("\u00a0" * 4 + "first", value)
+        self.assertIn('leaf="">\u00a0</span>', value)
+        self.assertIn("last\u00a0&lt;\u00a0&amp;\u00a0&gt;", value)
+        self.assertNotIn('leaf="">01</span>', value)
+
+    def test_step_has_no_outer_card_but_keeps_number_badge(self):
+        from html import unescape
+        from stitch_themes import declarations
+        for theme in catalog():
+            for key in ("step", "step_in_article"):
+                value = templates(theme["id"])[key]
+                styles = [dict(declarations(unescape(s)))
+                          for s in re.findall(r'style="([^"]*)"', value)]
+                card = next(s for s in styles if s.get("display") == "flex")
+                self.assertFalse(any(k.startswith(
+                    ("background", "border", "padding", "box-shadow")) for k in card))
+                self.assertTrue(any(s.get("background") == theme["primary"]
+                                    and s.get("width") == "28px" for s in styles))
 
     def test_component_root_keeps_typography_and_children_inherit(self):
         source = '<section style="color:red;font-size:14px;"><p style="color:red;font-size:14px;"><span leaf="">正文。</span></p></section>'
@@ -633,7 +661,7 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertIn("font-size:11px;vertical-align:super;",
                       renderer.inline("[^note]"))
 
-    def test_single_paragraph_card_has_one_box_and_preserves_inline_markup(self):
+    def test_plain_article_paragraphs_have_no_card_and_preserve_inline_markup(self):
         for theme in catalog():
             for layout in LAYOUTS:
                 renderer = Renderer(theme["id"], layout)
@@ -644,16 +672,25 @@ class TemplateStyleTests(unittest.TestCase):
                 self.assertEqual(value.count("<p "), 1)
                 self.assertNotIn("<section", value)
                 self.assertIn("<br>", value)
-                self.assertIn("box-shadow:", value)
-                self.assertIn("margin:0 0 24px;", value)
+                opening = value.split(">", 1)[0]
+                for prop in ("background:", "border:", "box-shadow:", "padding:", "border-radius:"):
+                    self.assertNotIn(prop, opening)
+                self.assertIn("margin:0 0 16px;", opening)
+                self.assertNotIn("font-size:", opening)
+                self.assertIn("code", value)
+                self.assertIn("font-weight:700;", value)
                 self.assertNotIn("display:flex;", value)
                 self.assertEqual(validate(value)[0], [])
-                # Two paragraphs keep the original card and its 12px flex gap.
+                # Adjacent paragraphs stay independent with no grouping box.
                 multiple = renderer.blocks(["第一段。", "", "第二段。"],
                                            prose_cards=True)
-                self.assertTrue(multiple.startswith("<section"))
-                self.assertIn("gap:12px;", multiple)
-                self.assertEqual(multiple.count('<p style="margin:0;">'), 2)
+                self.assertNotIn("<section", multiple)
+                self.assertNotIn("gap:", multiple)
+                self.assertEqual(multiple.count("<p "), 2)
+                self.assertEqual(multiple.count("margin:0 0 16px;"), 2)
+                self.assertNotIn("box-shadow:", multiple)
+                self.assertNotIn("background:", multiple)
+                self.assertNotIn("border:", multiple)
                 plain = renderer.blocks(["独立正文。"])
                 self.assertIn("margin:0 0 16px;", plain)
                 self.assertNotIn("box-shadow:", plain)

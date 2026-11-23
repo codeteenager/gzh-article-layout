@@ -142,12 +142,12 @@ class Renderer:
         if not lines:
             lines = [""]
         rows = []
-        for i, line in enumerate(lines, 1):
+        for line in lines:
             line = line.expandtabs(4)
             # NBSPs preserve indentation and repeated spaces without white-space:pre.
             line = line.replace(" ", "\u00a0")
             rows.append(self.c("code_row_in_rows" if in_article else "code_row_in_frame",
-                               number=str(i).zfill(2), line=line or "\u00a0"))
+                               line=line or "\u00a0"))
         return self.c("code_with_rows" if in_article else "code", _in_article=in_article,
                       filename=info or "CODE", language=info, rows_html="".join(rows))
 
@@ -196,6 +196,8 @@ class Renderer:
         return bool(re.match(r"^(#{1,6}\s|>|:::|```|~~~|[-+*]\s|\d+[.)]\s|!\[|<details>|<summary>|</details>)", line))
 
     def blocks(self, lines, prose_cards=False):
+        # Historical argument name retained for callers: it now only selects
+        # article-context typography, never automatic prose-card wrapping.
         out, i = [], 0
         while i < len(lines):
             line = lines[i]
@@ -344,21 +346,8 @@ class Renderer:
             joined = "\n".join(paragraph)
             rendered = self.inline(joined)
             rendered = rendered.replace("\n", "<br>")
-            paragraph_html = self.c("paragraph", body_html=rendered)
-            out.append("<!--prose-->" + paragraph_html + "<!--/prose-->" if prose_cards else paragraph_html)
-        result = "".join(out)
-        if prose_cards:
-            def card(match):
-                inner = match[0].replace("<!--prose-->", "").replace("<!--/prose-->", "")
-                inner = inherit_paragraphs(inner)
-                single = re.fullmatch(r'<p style="margin:0;">((?:(?!</?p\b).)*)</p>',
-                                      inner, flags=re.S)
-                if single:
-                    return self.c("prose_card_single", _in_article=True,
-                                  body_html=single[1])
-                return self.c("prose_card", _in_article=True, body_html=inner)
-            result = re.sub(r"(?:<!--prose-->.*?<!--/prose-->)+", card, result, flags=re.S)
-        return result
+            out.append(self.c("paragraph", _in_article=prose_cards, body_html=rendered))
+        return "".join(out)
 
     def render(self, markdown):
         self.section_no = self.step_no = 0

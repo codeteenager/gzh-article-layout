@@ -166,13 +166,13 @@ class Renderer:
             if state is not None:
                 if state.lower() == "x":
                     inner = '<span style="text-decoration:line-through;color:#71717A;">' + inner + "</span>"
-                item = self.c("task_item", state="✓" if state.lower() == "x" else "□", body_html=inner)
+                item = self.c("task_item_in_list", state="✓" if state.lower() == "x" else "□", body_html=inner)
             elif number is not None:
-                item = self.c("ordered_item", number=number.zfill(2), body_html=inner)
+                item = self.c("ordered_item_in_list", number=number.zfill(2), body_html=inner)
             else:
-                item = self.c("unordered_item", body_html=inner)
+                item = self.c("unordered_item_in_list", body_html=inner)
             items.append(item)
-        return self.c("list", items_html="".join(items))
+        return self.c("list_with_items", items_html="".join(items))
 
     @staticmethod
     def table_cells(line):

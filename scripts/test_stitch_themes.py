@@ -406,7 +406,7 @@ class TemplateStyleTests(unittest.TestCase):
                  "border:0 solid #e5e7eb;border-radius:0;padding:0;"
                  "margin-top:0;margin-bottom:0;box-sizing:border-box;")
         result = compact_template_style(style, tag="section", minimal=True)
-        self.assertEqual(result, "border:0;box-sizing:border-box;margin:0;")
+        self.assertEqual(result, "border:0;margin:0;")
         paragraph = compact_template_style(style, tag="p", minimal=True)
         self.assertIn("display:block;", paragraph)
         self.assertIn("padding:0;", paragraph)
@@ -503,6 +503,49 @@ class TemplateStyleTests(unittest.TestCase):
         # Nested quotes/headings are NOT direct children of the article container.
         nested = Renderer().blocks(["> ## 嵌套章节"], prose_cards=True)
         self.assertIn("font-size:14px;", nested[nested.find("<section", 1):])
+
+    def test_list_slot_contract_retains_standalone_items(self):
+        from stitch_themes import declarations
+        for theme in catalog():
+            data = templates(theme["id"])
+            parent = dict(declarations(re.search(r'style="([^"]*)"',
+                                                  data["list_with_items"])[1]))
+            for key in ("unordered_item", "ordered_item", "task_item"):
+                standalone = data[key].split(">", 1)[0]
+                variant = data[key + "_in_list"].split(">", 1)[0]
+                self.assertIn("font-family:", standalone)
+                self.assertNotIn("font-family:", variant)
+                self.assertIn("font-family", parent)
+                self.assertIn("line-height", parent)
+        output = Renderer().blocks(["- 项目", "  - 子项", "1. 数字", "- [x] 完成"])
+        self.assertEqual(Text(output).text(), "项目子项01数字✓完成")
+        self.assertIn("font-family:", output)  # one per list, not one per item
+
+    def test_inherited_compiler_context_respects_native_boundaries(self):
+        contract = {"font-family": "Inter,sans-serif", "color": "red",
+                    "font-size": "14px"}
+        source = ('<section><span style="color:red;font-family:Inter,sans-serif;">'
+                  '<span leaf="">文字</span></span><h3 style="color:red;font-size:14px;">'
+                  '<span leaf="">标题</span></h3></section>')
+        value = clean_template_styles(source, minimal=True, inherited=contract)
+        self.assertNotIn("font-family:", value)
+        self.assertIn('<h3 style="color:red;font-size:14px;">', value)
+        self.assertEqual(Text(source).text(), Text(value).text())
+
+    def test_auto_geometry_cleanup_preserves_layout_resets(self):
+        for tag in ("section", "span", "p"):
+            for geometry in ("width:100%;", "height:10px;", "padding:2px;",
+                             "padding-left:1px;", "border-left:2px solid red;"):
+                value = compact_template_style(
+                    "box-sizing:border-box;border:0;" + geometry,
+                    tag=tag, minimal=True)
+                self.assertIn("box-sizing:border-box;", value)
+            value = compact_template_style("box-sizing:border-box;border:0;min-width:0;",
+                                            tag=tag, minimal=True)
+            self.assertNotIn("box-sizing:", value)
+            self.assertIn("border:0;", value)
+        self.assertEqual(compact_template_style(
+            "flex:0 0 auto;flex-shrink:0;", minimal=True), "flex:none;")
 
 
 if __name__ == "__main__":

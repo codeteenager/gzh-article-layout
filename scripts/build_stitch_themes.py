@@ -200,6 +200,10 @@ def compact_template_style(style, tag=None, minimal=False):
             del props["flex"]
         if props.get("flex-direction") == "row":
             del props["flex-direction"]
+        if props.get("flex") == "0 0 auto":
+            props["flex"] = "none"
+            if props.get("flex-shrink") == "0":
+                del props["flex-shrink"]
         if props.get("border-radius") in {"0", "0px"}:
             del props["border-radius"]
         if tag == "section":
@@ -238,6 +242,17 @@ def compact_template_style(style, tag=None, minimal=False):
                 del props["border-color"]
                 props["border"] = "0"
                 props["border-left"] = "6px solid " + colors[-1]
+        # Auto-sized, borderless boxes have identical used dimensions regardless
+        # of box-sizing. Keep explicit geometry and unknown longhands intact.
+        if tag in {"section", "span", "p"}:
+            geometry = ("width", "height", "min-width", "max-width",
+                        "min-height", "max-height", "padding")
+            if (props.get("border", "0") == "0" and
+                    not any(key in props and props[key] not in {"0", "auto", "none"}
+                            for key in geometry) and
+                    not any(key.startswith(("padding-", "border-")) and key != "border-radius"
+                            for key in props)):
+                props.pop("box-sizing", None)
     return ";".join(key + ":" + compact_css_value(key, value)
                     for key, value in props.items()) + ";"
 
@@ -254,16 +269,17 @@ def short_box(values):
 class TemplateStyleCleaner(HTMLParser):
     """Reuse typography only inside one static component, never across slots."""
 
-    def __init__(self, minimal=False):
+    def __init__(self, minimal=False, inherited=None):
         super().__init__(convert_charrefs=False)
         self.minimal = minimal
         self.output = []
         self.stack = []
+        self.inherited = inherited or {}
 
     def handle_starttag(self, tag, attrs):
         raw = self.get_starttag_text()
         style = dict(attrs).get("style")
-        inherited = dict(self.stack[-1][1]) if self.stack else {}
+        inherited = dict(self.stack[-1][1]) if self.stack else dict(self.inherited)
         effective = dict(inherited)
         if tag in TYPOGRAPHY_BOUNDARIES:
             # Unknown native defaults must not be propagated to descendants.
@@ -320,7 +336,7 @@ class TemplateStyleCleaner(HTMLParser):
         self.output.append("<!--" + data + "-->")
 
 
-def clean_template_styles(value, minimal=False):
+def clean_template_styles(value, minimal=False, inherited=None):
     # Protect complete SVG source, including formatting of closing tags.
     fragments, ranges, depth, start = [], [], 0, None
     for match in re.finditer(r"</?svg\b[^>]*>", value):
@@ -337,7 +353,7 @@ def clean_template_styles(value, minimal=False):
         index = len(fragments)
         fragments.append(value[start:end])
         protected = protected[:start] + f"<!--GZH_SVG_PRESERVE_{index}-->" + protected[end:]
-    parser = TemplateStyleCleaner(minimal=minimal)
+    parser = TemplateStyleCleaner(minimal=minimal, inherited=inherited)
     parser.feed(protected)
     parser.close()
     # Only empty leaf nodes, never wrappers with meaningful typography/layout.
@@ -1043,14 +1059,8 @@ def compile_templates(theme, nodes):
     result = {key: clean_template_styles(value, minimal=True)
               for key, value in result.items()}
     def inherited_variant(value, contract):
-        # Root only: children already preserve their explicit overrides.
-        def opening(match):
-            pairs = declarations(html.unescape(match[2]))
-            style = ";".join(key + ":" + val for key, val in pairs
-                             if key not in INHERITED_TYPOGRAPHY or
-                             val != contract.get(key)) + ";"
-            return '<' + match[1] + ' style="' + escape_style_attribute(style) + '">'
-        return re.sub(r'^<(section|p) style="([^"]*)">', opening, value, count=1)
+        return clean_template_styles(value, minimal=True, inherited={
+            key: val for key, val in contract.items() if key in INHERITED_TYPOGRAPHY})
     contract = dict(declarations(html.unescape(
         re.search(r'style="([^"]*)"', result["container"])[1])))
     direct = ["prose_card", "footnote"]
@@ -1064,6 +1074,18 @@ def compile_templates(theme, nodes):
         result["toc_item_" + layout + "_in_toc"] = inherited_variant(value, toc_contract)
     for key in direct:
         result[key + "_in_article"] = inherited_variant(result[key], contract)
+    # This named container is only assembled with these three item variants.
+    # Move declarations common to every item to the parent once per list.
+    item_names = ("unordered_item", "ordered_item", "task_item")
+    roots = [dict(declarations(html.unescape(
+        re.search(r'style="([^"]*)"', result[key])[1]))) for key in item_names]
+    shared = {key: val for key, val in roots[0].items()
+              if key in INHERITED_TYPOGRAPHY and all(root.get(key) == val for root in roots)}
+    extra = ";".join(key + ":" + val for key, val in shared.items()) + ";"
+    result["list_with_items"] = result["list"].replace(
+        'style="', 'style="' + escape_style_attribute(extra), 1)
+    for key in item_names:
+        result[key + "_in_list"] = inherited_variant(result[key], shared)
     return result
 
 
@@ -1075,6 +1097,7 @@ DISPLAY = {
     "code": "macOS 代码视窗", "code_row": "独立逐行代码",
     "code_row_in_frame": "代码视窗内逐行代码", "unordered_item": "方标列表项",
     "ordered_item": "数字列表项", "task_item": "任务列表项", "list": "列表容器",
+    "list_with_items": "列表容器（与列表内变体配套）",
     "table": "横滑安全表格", "table_cell": "表格单元格", "image": "相框与图注",
     "link": "外链展示卡", "footnote": "脚注", "divider": "微点分割线",
     "details": "静态补充阅读（展开）", "signature": "文末压舱名片",
@@ -1103,7 +1126,8 @@ def reference(theme, templates):
     ]
     for key, value in templates.items():
         label = DISPLAY.get(key, key)
-        for suffix, context in (("_in_article", "（文章容器内）"), ("_in_toc", "（目录容器内）")):
+        for suffix, context in (("_in_article", "（文章容器内）"), ("_in_toc", "（目录容器内）"),
+                                ("_in_list", "（列表容器内）")):
             if key.endswith(suffix):
                 base = key.removesuffix(suffix)
                 label = DISPLAY.get(base, base) + context

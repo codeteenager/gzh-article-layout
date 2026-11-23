@@ -230,6 +230,30 @@ class StitchTests(unittest.TestCase):
 
 
 class TemplateStyleTests(unittest.TestCase):
+    def test_text_leaf_merges_but_flex_leaf_keeps_layout(self):
+        from build_stitch_themes import optimize_template_structure
+        source = '<span style="display:block;color:red;"><span leaf="">文字</span></span>'
+        self.assertEqual(optimize_template_structure(source),
+                         '<span leaf="" style="display:block;color:red;">文字</span>')
+        flex = '<span style="display:flex;"><span leaf="">文字</span></span>'
+        self.assertEqual(optimize_template_structure(flex), flex)
+
+    def test_svg_keeps_primitive_geometry(self):
+        from build_stitch_themes import optimize_template_structure
+        source = '<svg viewBox="0 0 64 1"><rect x="0" y="0" width="1.05" height="1" fill="rgb(5,150,105)" fill-opacity="1.0000"/></svg>'
+        result = optimize_template_structure(source)
+        self.assertIn('width="1.05" height="1" fill="#059669"', result)
+        self.assertNotIn("fill-opacity", result)
+        self.assertNotIn(' y="0"', result)
+
+    def test_code_frame_contract_and_standalone_fallback(self):
+        data = templates("emerald")
+        self.assertIn("font-family:", data["code_row"])
+        self.assertNotIn("font-family:", data["code_row_in_frame"])
+        self.assertNotIn("monospace;", data["code_row_in_frame"])
+        self.assertIn("line-height:1.6;", data["code_row_in_frame"])
+        self.assertIn('leaf=""', data["code_row_in_frame"])
+
     def test_component_root_keeps_typography_and_children_inherit(self):
         source = '<section style="color:red;font-size:14px;"><p style="color:red;font-size:14px;"><span leaf="">正文。</span></p></section>'
         result = clean_template_styles(source)

@@ -320,6 +320,36 @@ def clean_template_styles(value):
     return result
 
 
+def optimize_template_structure(value):
+    """Remove text-only span wrappers without altering the styled element."""
+    pattern = re.compile(r'<span(?P<attrs>\s[^<>]*?)?>'
+                         r'<span leaf="">(?P<text>[^<>]*)</span></span>')
+    def merge(match):
+        attrs = match["attrs"] or ""
+        style = re.search(r'\bstyle="([^"]*)"', attrs)
+        props = dict(declarations(html.unescape(style[1]))) if style else {}
+        # Keep actual flex containers; their leaf participates in layout.
+        if props.get("display") in {"flex", "inline-flex"} or "leaf=" in attrs:
+            return match[0]
+        return '<span leaf=""' + attrs + '>' + match["text"] + '</span>'
+    while True:
+        optimized = pattern.sub(merge, value)
+        if optimized == value:
+            break
+        value = optimized
+    # Same SVG primitives and geometry; only serialize equivalent attributes.
+    def svg(match):
+        source = match[0]
+        source = re.sub(r'fill="rgb\((\d+),\s*(\d+),\s*(\d+)\)"',
+                        lambda m: 'fill="#%02x%02x%02x"' % tuple(map(int, m.groups())),
+                        source)
+        source = re.sub(r'\sfill-opacity="1(?:\.0+)?"', "", source)
+        source = re.sub(r'(<rect\b[^>]*?)\sy="0"', r'\1', source)
+        source = re.sub(r'(<rect\b[^>]*?)\sx="0"', r'\1', source)
+        return source
+    return re.sub(r'<svg\b.*?</svg>', svg, value, flags=re.S)
+
+
 class Node:
     def __init__(self, tag, attrs=(), children=None):
         self.tag = tag
@@ -896,7 +926,18 @@ def compile_templates(theme, nodes):
     for key in list(result):
         if key not in {"container", "paragraph", "code_row", "table_cell", "footnote", "divider", "list"} and not key.startswith(("toc_item", "unordered_item", "ordered_item", "task_item")):
             result[key] = '<section style="margin:0 0 24px;">' + result[key] + "</section>"
-    return {key: clean_template_styles(value) for key, value in result.items()}
+    result = {key: optimize_template_structure(clean_template_styles(value))
+              for key, value in result.items()}
+    # The public standalone row keeps its complete typography. The in-frame
+    # variant explicitly relies only on the known code-body font contract.
+    def frame_row_style(match):
+        pairs = declarations(html.unescape(match[1]))
+        style = ";".join(key + ":" + value for key, value in pairs
+                         if key not in {"font-family", "font-size", "overflow-wrap"}) + ";"
+        return 'style="' + escape_style_attribute(style) + '"'
+    result["code_row_in_frame"] = re.sub(
+        r'style="([^"]*)"', frame_row_style, result["code_row"], count=1)
+    return result
 
 
 DISPLAY = {
@@ -904,7 +945,8 @@ DISPLAY = {
     "chapter_overprint": "浮光·透叠数字", "chapter_pure": "素墨·克制留白",
     "step": "步骤标题", "quote": "双向引号沉思卡", "pullquote": "强调金句",
     "paragraph": "正文段落", "warning": "暖黄警示", "metric": "灰阶诊断卡",
-    "code": "macOS 代码视窗", "code_row": "逐行代码", "unordered_item": "方标列表项",
+    "code": "macOS 代码视窗", "code_row": "独立逐行代码",
+    "code_row_in_frame": "代码视窗内逐行代码", "unordered_item": "方标列表项",
     "ordered_item": "数字列表项", "task_item": "任务列表项", "list": "列表容器",
     "table": "横滑安全表格", "table_cell": "表格单元格", "image": "相框与图注",
     "link": "外链展示卡", "footnote": "脚注", "divider": "微点分割线",
@@ -1001,7 +1043,7 @@ def build():
               "- 用户指定已删除的旧主题时提示选择当前内置主题，不默默回退或复活旧库。",
               "- 自定义主题仍按 theme-generator.md 登记，当前主题专属组件优先于通用库。", ""]
     write(ROOT / "references/theme-index.md", "\n".join(index))
-    print("Built %d colorways, 3 layouts and %d source-derived components per colorway." % (len(themes), len(nodes) + 1))
+    print("Built %d colorways, 3 layouts and %d components per colorway." % (len(themes), len(templates)))
 
 
 if __name__ == "__main__":

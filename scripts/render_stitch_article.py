@@ -129,7 +129,7 @@ class Renderer:
             line = line.expandtabs(4)
             # NBSPs preserve indentation and repeated spaces without white-space:pre.
             line = line.replace(" ", "\u00a0")
-            rows.append(self.c("code_row", number=str(i).zfill(2), line=line or "\u00a0"))
+            rows.append(self.c("code_row_in_frame", number=str(i).zfill(2), line=line or "\u00a0"))
         return self.c("code", filename=info or "CODE", language=info, rows_html="".join(rows))
 
     def list_block(self, lines):

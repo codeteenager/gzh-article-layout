@@ -13,7 +13,7 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
-from stitch_themes import ROOT, LAYOUT_NAMES
+from stitch_themes import ROOT, LAYOUT_NAMES, declarations, escape_style_attribute
 
 SOURCE = ROOT / "assets/stitch"
 VOID = {"img", "br", "hr", "meta", "link", "input"}
@@ -29,31 +29,6 @@ TYPOGRAPHY_BOUNDARIES = {
     "h1", "h2", "h3", "h4", "h5", "h6", "table", "th", "code", "pre",
     "strong", "b", "em", "i", "small", "sub", "sup", "button", "input",
 }
-
-
-def declarations(style):
-    """Split declarations without breaking quoted values, URLs or functions."""
-    parts, start, depth, quote, escaped = [], 0, 0, None, False
-    for i, char in enumerate(style):
-        if escaped:
-            escaped = False
-        elif char == "\\":
-            escaped = True
-        elif quote:
-            if char == quote:
-                quote = None
-        elif char in "\"'":
-            quote = char
-        elif char == "(":
-            depth += 1
-        elif char == ")":
-            depth -= 1
-        elif char == ";" and depth == 0:
-            parts.append(style[start:i])
-            start = i + 1
-    parts.append(style[start:])
-    return [tuple(map(str.strip, part.split(":", 1)))
-            for part in parts if ":" in part]
 
 
 def css_tokens(value):
@@ -140,7 +115,7 @@ def compact_css_value(key, value):
         return re.sub(r"\s*,\s*", ",", value).strip()
     if key == "box-shadow":
         # Remove only the exact transparent, zero-size layers in source exports.
-        value = re.sub(r"(?:^|(?<=,))\s*rgba\(0,0,0,0(?:\.0)?\)\s+0px\s+0px\s+0px\s+0px\s*,\s*",
+        value = re.sub(r"(?:^|(?<=,))\s*rgba\(0,0,0,0(?:\.0)?\)\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s+0(?:px)?\s*,\s*",
                        "", value)
     if key in ZERO_LENGTH_PROPERTIES or re.fullmatch(
         r"(?:margin|padding)-(?:top|right|bottom|left)|border-(?:top|right|bottom|left)(?:-width)?",
@@ -154,17 +129,7 @@ def compact_css_value(key, value):
     return value
 
 
-def escape_style_attribute(value):
-    """Keep font-family serialization stable for the existing card assembler."""
-    if "font-family:" in value:
-        # The renderer extracts prose typography from serialized style strings.
-        # Changing font-family quoting affects that legacy extraction and can
-        # change inline text metrics. Preserve it until that path is redesigned.
-        return html.escape(value, quote=True)
-    return html.escape(value, quote=False).replace('"', "&quot;")
-
-
-def compact_template_style(style):
+def compact_template_style(style, tag=None, minimal=False):
     pairs = declarations(style)
     # Unknown/custom CSS is not rewritten: these optimizations target the built-in
     # templates, not arbitrary cascading styles or important declarations.
@@ -212,6 +177,32 @@ def compact_template_style(style):
             # Fully specified longhands override an earlier shorthand.
             props.pop(base, None)
             props[base] = short_box(values)
+    if minimal:
+        # This final compiler pass runs AFTER structure merging, which relies on
+        # explicit source defaults. Never apply it to arbitrary author HTML.
+        if re.fullmatch(r"0(?:px)? solid #[\da-fA-F]{6}", props.get("border", "")):
+            if not any(key.startswith("border-") and key != "border-radius"
+                       for key in props):
+                props["border"] = "0"
+        if (props.get("flex") == "0 1 auto" and
+                all(props.get(key, default) == default for key, default in
+                    (("flex-grow", "0"), ("flex-shrink", "1"), ("flex-basis", "auto")))):
+            del props["flex"]
+        if props.get("flex-direction") == "row":
+            del props["flex-direction"]
+        if props.get("border-radius") in {"0", "0px"}:
+            del props["border-radius"]
+        if tag == "section":
+            if props.get("display") == "block":
+                del props["display"]
+            if props.get("padding") in {"0", "0px"}:
+                del props["padding"]
+            if (props.get("margin-top") in {"0", "0px"} and
+                    props.get("margin-bottom") in {"0", "0px"} and
+                    not any(key in props for key in ("margin", "margin-left", "margin-right"))):
+                del props["margin-top"]
+                del props["margin-bottom"]
+                props["margin"] = "0"
     return ";".join(key + ":" + compact_css_value(key, value)
                     for key, value in props.items()) + ";"
 
@@ -228,8 +219,9 @@ def short_box(values):
 class TemplateStyleCleaner(HTMLParser):
     """Reuse typography only inside one static component, never across slots."""
 
-    def __init__(self):
+    def __init__(self, minimal=False):
         super().__init__(convert_charrefs=False)
+        self.minimal = minimal
         self.output = []
         self.stack = []
 
@@ -242,7 +234,7 @@ class TemplateStyleCleaner(HTMLParser):
             # Unknown native defaults must not be propagated to descendants.
             effective = {}
         if style is not None:
-            compact = compact_template_style(style)
+            compact = compact_template_style(style, tag=tag, minimal=self.minimal)
             pairs = declarations(compact)
             props = dict(pairs)
             if not any(key in props for key in ("font", "all")) and not any(
@@ -293,7 +285,7 @@ class TemplateStyleCleaner(HTMLParser):
         self.output.append("<!--" + data + "-->")
 
 
-def clean_template_styles(value):
+def clean_template_styles(value, minimal=False):
     # Protect complete SVG source, including formatting of closing tags.
     fragments, ranges, depth, start = [], [], 0, None
     for match in re.finditer(r"</?svg\b[^>]*>", value):
@@ -310,7 +302,7 @@ def clean_template_styles(value):
         index = len(fragments)
         fragments.append(value[start:end])
         protected = protected[:start] + f"<!--GZH_SVG_PRESERVE_{index}-->" + protected[end:]
-    parser = TemplateStyleCleaner()
+    parser = TemplateStyleCleaner(minimal=minimal)
     parser.feed(protected)
     parser.close()
     # Only empty leaf nodes, never wrappers with meaningful typography/layout.
@@ -1013,7 +1005,8 @@ def compile_templates(theme, nodes):
         return 'style="' + escape_style_attribute(style) + '"'
     result["code_row_in_frame"] = re.sub(
         r'style="([^"]*)"', frame_row_style, result["code_row"], count=1)
-    return result
+    return {key: clean_template_styles(value, minimal=True)
+            for key, value in result.items()}
 
 
 DISPLAY = {

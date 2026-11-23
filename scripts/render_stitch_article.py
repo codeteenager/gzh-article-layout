@@ -10,7 +10,8 @@ import html
 import re
 from pathlib import Path
 
-from stitch_themes import LAYOUTS, catalog, chapter, component, theme_by_id
+from stitch_themes import (LAYOUTS, catalog, chapter, component, theme_by_id,
+                          declarations, escape_style_attribute)
 from validate_gzh_html import validate
 
 
@@ -39,9 +40,17 @@ def safe_url(url):
 def inherit_paragraphs(value):
     """Use source card/quotation typography instead of nesting generic prose styles."""
     def opening(match):
-        style = re.sub(r"(?:font-family|font-size|font-weight|line-height|letter-spacing|color):[^;]*;", "", match[1])
-        style = re.sub(r"margin:[^;]*;", "margin:0;", style)
-        return '<p style="' + style + '">'
+        pairs = declarations(html.unescape(match[1]))
+        removed = {"font-family", "font-size", "font-weight", "line-height",
+                   "letter-spacing", "color"}
+        # Generic card paragraphs inherit wrapping too. The old entity-broken
+        # font removal swallowed this declaration; do not activate it now.
+        if any(key == "font-family" and ("'" in val or '"' in val)
+               for key, val in pairs):
+            removed.add("overflow-wrap")
+        style = ";".join(key + ":" + ("0" if key == "margin" else val)
+                         for key, val in pairs if key not in removed) + ";"
+        return '<p style="' + escape_style_attribute(style) + '">'
     return re.sub(r'<p style="([^"]*)">', opening, value)
 
 

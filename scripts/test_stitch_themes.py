@@ -243,6 +243,26 @@ class TemplateStyleTests(unittest.TestCase):
         self.assertIn(body, result)
         self.assertEqual(merge_component_spacing(result), result)
 
+    def test_card_paragraph_parses_entities_and_preserves_effective_wrapping(self):
+        from render_stitch_article import inherit_paragraphs
+        source = ('<p style="box-sizing:border-box;margin:12px 0;'
+                  'font-family:&#x27;PingFang SC&#x27;,sans-serif;'
+                  'font-size:14px;color:red;overflow-wrap:anywhere;'
+                  'background:url(&quot;a;b.png&quot;);">'
+                  '<span leaf="">正文。</span></p>')
+        result = inherit_paragraphs(source)
+        self.assertNotIn('PingFang', result)
+        self.assertNotIn('font-size:', result)
+        self.assertNotIn('overflow-wrap:', result)
+        self.assertIn('margin:0;', result)
+        self.assertIn('background:url(&quot;a;b.png&quot;);', result)
+        self.assertEqual(Text(source).text(), Text(result).text())
+        self.assertEqual(inherit_paragraphs(result), result)
+        self.assertIn('overflow-wrap:anywhere;', inherit_paragraphs(
+            '<p style="margin:12px;overflow-wrap:anywhere;">正文。</p>'))
+        self.assertIn('overflow-wrap:anywhere;', inherit_paragraphs(
+            '<p style="font-family:sans-serif;overflow-wrap:anywhere;">正文。</p>'))
+
     def test_spacing_wrapper_retains_unsafe_geometry_and_siblings(self):
         from build_stitch_themes import merge_component_spacing
         for extra in ('width:100%;', 'position:relative;', 'margin:12px 0;',
@@ -360,7 +380,7 @@ class TemplateStyleTests(unittest.TestCase):
     def test_font_family_serialization_stays_compatible_with_renderer(self):
         source = '<p style="font-family:&#x27;PingFang SC&#x27;;"><span leaf="">正文。</span></p>'
         result = clean_template_styles(source)
-        self.assertIn("font-family:&#x27;PingFang SC&#x27;;", result)
+        self.assertIn("font-family:'PingFang SC';", result)
         quoted = '<p style="font-family:&quot;A&amp;B&quot;;">text</p>'
         self.assertIn('&quot;A&amp;B&quot;', clean_template_styles(quoted))
 
@@ -375,6 +395,52 @@ class TemplateStyleTests(unittest.TestCase):
         style = "box-shadow:rgba(0,0,0,0.0) 0px 0px 0px 0px, rgba(0,0,0,0.05) 0px 1px 2px 0px;"
         result = compact_template_style(style)
         self.assertEqual(result, "box-shadow:rgba(0,0,0,0.05) 0 1px 2px 0;")
+        self.assertEqual(compact_template_style(result), result)
+        mixed = "box-shadow:rgba(0,0,0,0.0) 0 0px 0 0px, rgba(0,0,0,.1) 0 1px 2px 0;"
+        self.assertNotIn("rgba(0,0,0,0.0)", compact_template_style(mixed))
+        visible = "box-shadow:rgba(0,0,0,0.1) 0 0 0 0;"
+        self.assertEqual(compact_template_style(visible), visible)
+
+    def test_final_default_pass_is_tag_scoped_and_keeps_resets(self):
+        style = ("display:block;flex:0 1 auto;flex-direction:row;"
+                 "border:0 solid #e5e7eb;border-radius:0;padding:0;"
+                 "margin-top:0;margin-bottom:0;box-sizing:border-box;")
+        result = compact_template_style(style, tag="section", minimal=True)
+        self.assertEqual(result, "border:0;box-sizing:border-box;margin:0;")
+        paragraph = compact_template_style(style, tag="p", minimal=True)
+        self.assertIn("display:block;", paragraph)
+        self.assertIn("padding:0;", paragraph)
+        self.assertIn("margin-top:0;", paragraph)
+        self.assertNotIn("margin:0;", paragraph)
+        side = "border:0 solid #e5e7eb;border-left:6px solid red;"
+        self.assertNotIn("border:0;", compact_template_style(side, minimal=True))
+        unsafe = "flex-shrink:0;flex:0 1 auto;"
+        self.assertIn("flex:0 1 auto;", compact_template_style(unsafe, minimal=True))
+        important = "border-radius:0!important;display:block;"
+        self.assertEqual(compact_template_style(important, tag="section", minimal=True),
+                         important)
+
+    def test_shared_style_parser_and_attribute_escape_round_trip(self):
+        from stitch_themes import declarations, escape_style_attribute
+        from html import unescape
+        style = '''font-family:'A;B',sans-serif;background:url("a;b.png");padding:0;'''
+        self.assertEqual(declarations(style), [
+            ("font-family", "'A;B',sans-serif"),
+            ("background", 'url("a;b.png")'), ("padding", "0")])
+        self.assertEqual(unescape(escape_style_attribute(style)), style)
+        self.assertNotIn("&#x27;", escape_style_attribute(style))
+
+    def test_compiled_minimal_templates_are_idempotent_and_keep_quote_layout(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            for key, value in data.items():
+                with self.subTest(theme=theme["id"], component=key):
+                    self.assertEqual(clean_template_styles(value, minimal=True), value)
+            for layout in LAYOUTS:
+                quote = data["quote_" + layout]
+                self.assertIn("display:flex;gap:12px;", quote)
+                self.assertIn("border-width:0 0 0 6px;", quote)
+                self.assertNotIn('<section style="margin:0 0 24px;"><section', quote)
 
     def test_table_retains_inheritance_boundary(self):
         result = clean_template_styles('<section style="color:red;line-height:24px;"><table style="color:red;line-height:24px;"><tr><td>text</td></tr></table></section>')

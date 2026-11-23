@@ -12,6 +12,36 @@ LAYOUTS = ("ruler", "overprint", "pure")
 LAYOUT_NAMES = {"ruler": "墨规", "overprint": "浮光", "pure": "素墨"}
 
 
+def declarations(style):
+    """Split decoded CSS without breaking quoted values, URLs or functions."""
+    parts, start, depth, quote, escaped = [], 0, 0, None, False
+    for i, char in enumerate(style):
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif quote:
+            if char == quote:
+                quote = None
+        elif char in "\"'":
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == ";" and depth == 0:
+            parts.append(style[start:i])
+            start = i + 1
+    parts.append(style[start:])
+    return [tuple(map(str.strip, part.split(":", 1)))
+            for part in parts if ":" in part]
+
+
+def escape_style_attribute(value):
+    """Escape double-quoted HTML attributes; literal apostrophes are safe."""
+    return html.escape(value, quote=False).replace('"', "&quot;")
+
+
 @lru_cache(maxsize=1)
 def catalog():
     return json.loads((ROOT / "assets/stitch/themes.json").read_text(encoding="utf-8"))

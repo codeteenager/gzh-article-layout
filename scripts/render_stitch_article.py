@@ -375,7 +375,7 @@ class Renderer:
                     bio = bio[:split.start()]
                 self.bio = self.bio or bio
         chapters = [re.sub(r"^##\s+", "", line) for line in lines if line.startswith("## ")][:3]
-        cover = self.c("hero", _in_article=True, category=self.theme["name"], meta="深度排版实战", credit="原创思考",
+        cover = self.c("hero", _in_article=True, category=self.theme["name"], meta="", credit="",
                        title=title, subtitle="")
         content = self.blocks(lines, prose_cards=True)
         toc = ""

@@ -95,6 +95,20 @@ def component(theme_id, name, **fields):
     missing = slots - set(fields)
     if missing:
         raise ValueError("组件 %s 缺少字段：%s" % (name, ", ".join(sorted(missing))))
+    # WeChat inserts <br> into empty leaves. In a flex column that creates
+    # an extra line and offsets the visible title from its number badge.
+    # Remove the optional slot before substitution, not arbitrary user spans.
+    if name in ("step", "step_in_article") and not str(fields["subtitle"]).strip():
+        value = re.sub(r'<span\b[^>]*>\{\{subtitle\}\}</span>', "", value)
+    if name == "hero" or name.startswith("hero_"):
+        for slot in ("meta", "credit"):
+            if slot in fields and not str(fields[slot]).strip():
+                # Remove the whole optional badge, not just its text leaf.
+                value = re.sub(
+                    r'<span\b[^>]*><span leaf="">\{\{' + slot +
+                    r'\}\}</span></span>', "", value)
+                value = re.sub(
+                    r'<span\b[^>]*>\{\{' + slot + r'\}\}</span>', "", value)
     # Single substitution pass: user text cannot inject a second template slot.
     result = re.sub(
         r"\{\{([a-z_]+)\}\}",

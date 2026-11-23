@@ -1311,6 +1311,23 @@ def compile_templates(theme, nodes):
         result[key + "_in_article"] = inherited_variant(result[key], contract)
     # This named container is only assembled with these three item variants.
     # Move declarations common to every item to the parent once per list.
+    # Center the ordered badge against the FIRST text line, not the whole
+    # multiline item. The wrapper takes the item's own compiled line height.
+    ordered = result["ordered_item"]
+    ordered_style = dict(declarations(html.unescape(
+        re.search(r'style="([^"]*)"', ordered)[1])))
+    badge = re.search(r'<span style="([^"]*)"><span leaf="">'
+                      r'\{\{number\}\}</span></span>', ordered)
+    if not badge:
+        raise ValueError("Ordered-list badge template not found")
+    badge_style = ";".join(k + ":" + v for k, v in
+                          declarations(html.unescape(badge[1]))
+                          if k != "margin-top") + ";"
+    replacement = (
+        '<span style="height:%s;display:flex;align-items:center;flex:none;">'
+        '<span style="%s"><span leaf="">{{number}}</span></span></span>'
+        % (ordered_style["line-height"], escape_style_attribute(badge_style)))
+    result["ordered_item"] = ordered[:badge.start()] + replacement + ordered[badge.end():]
     item_names = ("unordered_item", "ordered_item", "task_item")
     roots = [dict(declarations(html.unescape(
         re.search(r'style="([^"]*)"', result[key])[1]))) for key in item_names]

@@ -85,7 +85,7 @@
 ### 数字列表项 · `ordered_item`
 
 ```html
-<section style="display:flex;align-items:flex-start;gap:8px;line-height:21.125px;font-size:13px;font-weight:400;letter-spacing:normal;color:#121c2a;"><span style="width:16px;height:16px;border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:2px;line-height:17.875px;flex:none;background:#F4F4F5;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#27272A;"><span leaf="">{{number}}</span></span><span>{{body_html}}</span></section>
+<section style="display:flex;align-items:flex-start;gap:8px;line-height:21.125px;font-size:13px;font-weight:400;letter-spacing:normal;color:#121c2a;"><span style="height:21.125px;display:flex;align-items:center;flex:none;"><span style="width:16px;height:16px;border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:17.875px;flex:none;background:#F4F4F5;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#27272A;"><span leaf="">{{number}}</span></span></span><span>{{body_html}}</span></section>
 ```
 
 ### 任务列表项 · `task_item`
@@ -517,7 +517,7 @@
 ### 数字列表项（列表容器内） · `ordered_item_in_list`
 
 ```html
-<section style="display:flex;align-items:flex-start;gap:8px;color:#121c2a;"><span style="width:16px;height:16px;border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:2px;line-height:17.875px;flex:none;background:#F4F4F5;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#27272A;"><span leaf="">{{number}}</span></span><span>{{body_html}}</span></section>
+<section style="display:flex;align-items:flex-start;gap:8px;color:#121c2a;"><span style="height:21.125px;display:flex;align-items:center;flex:none;"><span style="width:16px;height:16px;border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:17.875px;flex:none;background:#F4F4F5;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#27272A;"><span leaf="">{{number}}</span></span></span><span>{{body_html}}</span></section>
 ```
 
 ### 任务列表项（列表容器内） · `task_item_in_list`

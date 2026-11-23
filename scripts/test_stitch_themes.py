@@ -228,8 +228,52 @@ class StitchTests(unittest.TestCase):
         output = component("emerald", "step", number=1, title="{{subtitle}}", subtitle="REAL")
         self.assertIn("{{subtitle}}", Text(output).text())
 
+    def test_hero_hides_default_meta_and_credit_without_empty_badges(self):
+        for theme in catalog():
+            for layout in LAYOUTS:
+                output = Renderer(theme["id"], layout).render("# 测试标题")
+                self.assertNotIn("深度排版实战", output)
+                self.assertNotIn("原创思考", output)
+                hero = component(theme["id"], "hero_" + layout + "_in_article",
+                                 category="主题", meta="", credit="",
+                                 title="测试标题", subtitle="")
+                self.assertIn("主题", Text(hero).text())
+                self.assertIn("测试标题", Text(hero).text())
+                self.assertNotRegex(hero, r'<span leaf=""[^>]*>\s*</span>')
+                self.assertNotRegex(hero, r'<span\b[^>]*><span leaf=""></span></span>')
+
+    def test_step_omits_empty_subtitle_without_changing_real_content(self):
+        for theme in catalog():
+            for key in ("step", "step_in_article"):
+                for subtitle in ("", " \t\n"):
+                    output = component(theme["id"], key, number=1,
+                                       title="{{subtitle}}", subtitle=subtitle)
+                    self.assertEqual(output.count("<span"), 2)
+                    self.assertIn("{{subtitle}}", Text(output).text())
+                    self.assertNotRegex(output, r'<span\b[^>]*>\s*</span>')
+                output = component(theme["id"], key, number=1,
+                                   title="标题", subtitle="真实副标题")
+                self.assertEqual(output.count("<span"), 3)
+                self.assertIn("真实副标题", Text(output).text())
+
 
 class TemplateStyleTests(unittest.TestCase):
+    def test_ordered_badge_centers_on_first_line_not_entire_item(self):
+        from html import unescape
+        from stitch_themes import declarations
+        for theme in catalog():
+            data = templates(theme["id"])
+            root = dict(declarations(unescape(
+                re.search(r'style="([^"]*)"', data["ordered_item"])[1])))
+            for key in ("ordered_item", "ordered_item_in_list"):
+                value = data[key]
+                self.assertIn("align-items:flex-start;", value)
+                self.assertNotIn("margin-top:", value)
+                self.assertIn('height:' + root["line-height"] +
+                              ';display:flex;align-items:center;flex:none;', value)
+                self.assertEqual(value.count("{{number}}"), 1)
+                self.assertEqual(value.count("{{body_html}}"), 1)
+
     def test_spacing_wrapper_merges_without_reserializing_content(self):
         from build_stitch_themes import merge_component_spacing
         body = '<svg viewBox="0 0 1 1"><rect width="1"/></svg>{{body_html}}'

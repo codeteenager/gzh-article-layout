@@ -124,7 +124,7 @@ class StitchTests(unittest.TestCase):
                         self.assertIn(phrase, text)
                     self.assertIn("✓", text)
                     self.assertIn("□", text)
-                    self.assertNotIn("甲木 × 摸鱼小李", text)
+                    self.assertNotIn("Jacob", text)
                     self.assertNotIn("许多创作者在刚接触排版时", text)
                     self.assertIn('src="https://example.com/plain.png"', output)
                     self.assertEqual(output.count("<figcaption"), 2)
@@ -158,7 +158,7 @@ class StitchTests(unittest.TestCase):
             self.assertIn("长按右侧二维码关注专栏", Text(output).text())
             self.assertIn("扫码关注", Text(output).text())
             self.assertIn("width:36px;height:36px" if layout == "pure" else "width:32px;height:32px", output)
-            self.assertNotIn("甲木 × 摸鱼小李", Text(output).text())
+            self.assertNotIn("Jacob", Text(output).text())
         with self.assertRaises(ValueError):
             Renderer(qr_url="javascript:alert(1)")
 
@@ -207,7 +207,7 @@ class StitchTests(unittest.TestCase):
             main = next(load(layout).nodes("main")).elements()[0]
             compiled = Compiler(ORIGINAL).render(main)
             self.assertIn("为什么之前的排版总觉得", Text(compiled).text())
-            self.assertIn("甲木 × 摸鱼小李", Text(compiled).text())
+            self.assertIn("Jacob", Text(compiled).text())
             self.assertIn("rgb(6, 46, 36)", compiled)
             self.assertIn("rgb(0, 105, 72)", compiled)
 
@@ -281,6 +281,16 @@ class StitchTests(unittest.TestCase):
 
 
 class TemplateStyleTests(unittest.TestCase):
+    def test_sample_identity_is_jacob_and_does_not_leak_into_templates(self):
+        sample = (ROOT / "assets/sample-article.md").read_text()
+        self.assertIn("我是Jacob，致力于分享一些AI技术、AI干货内容。", sample)
+        for layout in LAYOUTS:
+            output = Renderer("emerald", layout).render(sample)
+            self.assertEqual(Text(output).text().count("Jacob"), 1)
+            self.assertIn("致力于分享一些AI技术、AI干货内容。", Text(output).text())
+            self.assertIn("{{initial}}", templates("emerald")["signature_" + layout])
+            self.assertNotIn("Jacob", Renderer("emerald", layout).render("# 无署名\n\n正文。"))
+
     def test_engagement_has_no_design_credit(self):
         for theme in catalog():
             for layout in LAYOUTS:

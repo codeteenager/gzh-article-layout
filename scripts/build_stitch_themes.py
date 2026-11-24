@@ -1213,11 +1213,11 @@ def source_components():
                 value.elements()[1].children=["{{items_html}}"]
                 text_slots(value,{"横滑浏览":"toc_hint"})
             elif name == "signature":
-                text_slots(value,{"甲木 × 摸鱼小李":"author", "专注富文本工程规范与纸质卡片审美，杜绝廉价排版。":"bio",
+                text_slots(value,{"Jacob":"author", "致力于分享一些AI技术、AI干货内容。":"bio",
                                   "长按右侧二维码关注专栏":"signature_note", "扫码关注":"qr_caption"})
                 for n in [value]+list(value.nodes()):
                     for i,c in enumerate(n.children):
-                        if isinstance(c,str) and c.strip()=="甲": n.children[i]="{{initial}}"
+                        if isinstance(c,str) and c.strip()=="J": n.children[i]="{{initial}}"
                 next(value.nodes("img")).attrs["src"]="{{qr_url}}"
                 no_qr = copy.deepcopy(value)
                 no_qr.children = [no_qr.elements()[0]]

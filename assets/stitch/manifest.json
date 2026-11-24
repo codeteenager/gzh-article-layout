@@ -9,7 +9,7 @@
       "width": "780",
       "height": "6838",
       "source": "assets/stitch/ruler.html",
-      "sha256": "e5fabcee076a90d46b30ad9e9598ed550e8b9c0265c14d621faca90a92343f88"
+      "sha256": "cfcc84d44f3919c3be165ffb19e537cda827a7c3d665f5d16e6fa08102ffb2ef"
     },
     {
       "id": "7cdfe8c73077432ea801566c4f8e7d93",
@@ -18,7 +18,7 @@
       "width": "780",
       "height": "14734",
       "source": "assets/stitch/components.html",
-      "sha256": "a041f7e74fe6df62ff0c8ca63206feee25cb8d3cfb3b7aff7f530cc1e775c543"
+      "sha256": "2b673fac88f9e60d9d066ebde9dc1406fa9c69b0fbd8a8103b01726d3e3bcde7"
     },
     {
       "id": "1dfb84765b1c4c639f60759770b96172",
@@ -27,7 +27,7 @@
       "width": "2560",
       "height": "7050",
       "source": "assets/stitch/color-gallery.html",
-      "sha256": "7f2423b48915ebd0c2032fffd9c8359ab8d2cf96284a5a81ef889adf63f269d2"
+      "sha256": "cbd91db45a1c3ca27870b16f6937691a420de4b9b59245066be3f099d7ff42c2"
     },
     {
       "id": "4910934c6c7e4e6e830d2a23fe1cae9b",
@@ -36,7 +36,7 @@
       "width": "780",
       "height": "6922",
       "source": "assets/stitch/overprint.html",
-      "sha256": "db4d47d2186c5d3a4eeb0a432d2b26061168efd2b4aeb3e3406624878ed064f7"
+      "sha256": "c65b8cf8bc6196db961f1dc16d5bc9b11df543fbee8463fb7240bc3bf1fb433b"
     },
     {
       "id": "daadbffbb5e1425b8298bc475eee3a69",
@@ -45,7 +45,13 @@
       "width": "780",
       "height": "6780",
       "source": "assets/stitch/pure.html",
-      "sha256": "5c9535e82c31826b05b5d2fea70c2c7c3207b7ee041130136ccc16278bdb7bc1"
+      "sha256": "475d718a62a3c683dabb02c5bfea8042d933651a76965b58c9f7094695a63f28"
+    }
+  ],
+  "localCustomizations": [
+    {
+      "date": "2026-11-24",
+      "description": "示例身份统一为 Jacob，简介改为致力于分享一些AI技术、AI干货内容。，头像改为 J；来源项目与 screen ID 保持原始来源标识。"
     }
   ]
 }

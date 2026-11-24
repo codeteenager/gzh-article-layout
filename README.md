@@ -82,7 +82,7 @@
 ```text
 将 article.md 排版成公众号文章。
 主题：bamboo-teal；版式：overprint
-作者：张三
+作者：Jacob
 简介：分享产品与工程实践
 ```
 

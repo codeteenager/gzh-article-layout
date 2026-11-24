@@ -84,7 +84,7 @@ The default is **墨规 · 翡翠林木** (`emerald + ruler`). You can also spec
 ```text
 Format article.md for WeChat.
 Theme: bamboo-teal; layout: overprint
-Author: Alex
+Author: Jacob
 Bio: Writing about product and engineering
 ```
 

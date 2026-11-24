@@ -30,7 +30,7 @@
 ```text
 把 article.md 排成微信公众号文章。
 生成正文 HTML、预览页，并完成校验。
-作者：张三
+作者：Jacob
 简介：关注 AI 产品与工程实践
 二维码：https://example.com/my-qr.png
 ```
@@ -43,7 +43,7 @@
 python3 scripts/render_stitch_article.py article.md \
   --theme emerald \
   --layout ruler \
-  --author "张三" \
+  --author "Jacob" \
   --bio "关注 AI 产品与工程实践" \
   --qr-url "https://example.com/my-qr.png" \
   --output article_排版.html

@@ -30,7 +30,7 @@ It formats existing content rather than writing articles. The default theme is *
 
 ## Theme Previews
 
-These 15 phone-sized screenshots were rendered from the same sample article using this project. Each theme uses its registered default chapter layout. Images show only the article content, without the browser preview toolbar; click an image to view it at full size.
+These 15 screenshots were regenerated with the current renderer from `assets/sample-article.md` at 402px wide, capturing the full article height including the Like / Save / Share footer. Each theme uses its registered default chapter layout. No author argument is passed, so the source signature remains ordinary text rather than an author card. Images exclude the browser preview toolbar; click an image to view it at full size.
 
 <table>
 <tr>

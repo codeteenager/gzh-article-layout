@@ -169,7 +169,7 @@ class StitchTests(unittest.TestCase):
                                   bio="只有简介", qr_url="https://example.com/qr.png").render("# 标题")
                 self.assertNotIn("只有简介", output)
                 self.assertNotIn("https://example.com/qr.png", output)
-                self.assertIn("如果这篇对你有帮助", output)
+                self.assertIn("收藏方便回看", output)
             for bio in (None, "", " \t"):
                 output = Renderer("emerald", layout, author="张三", bio=bio).render("# 标题")
                 self.assertIn("张三", output)
@@ -184,16 +184,19 @@ class StitchTests(unittest.TestCase):
             text = Text(value).text()
             self.assertIn("正文提示", text)
             self.assertIn("既然看到这里了", text)
-            for label in ("点赞", "在看", "分享"):
+            for label in ("点赞", "收藏", "分享"):
                 self.assertEqual(text.count(label), 1)
             for unwanted in ("<button", "<a ", "<script", "onclick="):
                 self.assertNotIn(unwanted, value)
             for restored in ("<svg", "border-radius:", "background:"):
                 self.assertIn(restored, value)
             self.assertEqual(validate(value)[:2], ([], []))
+            self.assertIn('stroke-width="1.8"', value)
+            self.assertIn('d="M19 21l-7-5-7 5V5', value)
+            self.assertNotIn("在看", text)
             output = Renderer("emerald", layout).render("# 标题\n\n正文。")
-            for label in ("点赞", "分享", "在看"):
-                self.assertEqual(Text(output).text().count(label), 2)
+            for label in ("点赞", "分享", "收藏"):
+                self.assertEqual(Text(output).text().count(label), 1 if label == "点赞" else 2)
             self.assertNotIn("转发", Text(output).text())
             self.assertNotIn("三连", output)
 
@@ -203,6 +206,7 @@ class StitchTests(unittest.TestCase):
                 "# 标题\n\n::: engagement\n欢迎转发给同事，也欢迎留言讨论。\n:::")
             self.assertEqual(Text(output).text().count("欢迎转发给同事，也欢迎留言讨论。"), 1)
             self.assertNotIn("如果这篇对你有帮助", output)
+            self.assertNotIn("收藏方便回看", output)
             self.assertEqual(Text(output).text().count("点赞"), 1)
 
     def test_original_palette_comparison_has_the_same_source_content(self):
@@ -302,7 +306,7 @@ class TemplateStyleTests(unittest.TestCase):
                 output = templates(theme["id"])["engagement_" + layout]
                 self.assertNotIn("感谢阅读 · 原创排版设计分享", output)
                 self.assertEqual(Text(output).text(),
-                                 "既然看到这里了{{message}}点赞在看分享感谢阅读")
+                                 "既然看到这里了{{message}}点赞收藏分享感谢阅读")
                 self.assertNotIn("三连", output)
 
     def test_skill_has_no_default_identity_and_cards_require_author(self):

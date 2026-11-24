@@ -859,6 +859,13 @@ RESOLVED_DESKTOP = resolved_styles(677)
 
 
 def icon_svg(name, size, color):
+    if name == "engagement_bookmark":
+        # Stroke-based SVG returned by Stitch, separate from bundled glyphs.
+        source = (SOURCE / "engagement-bookmark" / "bookmark.svg").read_text().strip()
+        source = source.replace('width="24"', 'width="%s"' % size)
+        source = source.replace('height="24"', 'height="%s"' % size)
+        return source.replace('stroke="currentColor"', 'stroke="%s"' % color).replace(
+            '<svg ', '<svg style="display:block;flex-shrink:0;" ', 1)
     source = (SOURCE / "icons" / (name + ".svg")).read_text()
     source = re.sub(r'width="24"', 'width="%s"' % size, source)
     source = re.sub(r'height="24"', 'height="%s"' % size, source)
@@ -1321,6 +1328,10 @@ def source_components():
                     for label in action.elements():
                         if label.text().strip() == "转发":
                             label.children = ["分享"]
+                        elif label.text().strip() == "在看":
+                            label.children = ["收藏"]
+                        elif label.text().strip() == "visibility":
+                            label.children = ["engagement_bookmark"]
                 credit = value.elements()[-1]
                 credit.children = ["感谢阅读"]
             result[name+"_"+slug]=value

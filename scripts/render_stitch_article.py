@@ -371,7 +371,7 @@ class Renderer:
         if first is not None and re.match(r"^#\s+", lines[first]):
             title = re.sub(r"^#\s+", "", lines.pop(first))
         # Merge an original terminal signature, never duplicate it.
-        self.footer_message = "如果这篇对你有帮助，欢迎点赞、分享给需要的朋友，或点个在看。"
+        self.footer_message = "有用就点个赞，收藏方便回看，也欢迎分享给需要的朋友。"
         tail = next((i for i in range(len(lines) - 1, -1, -1) if lines[i].strip()), None)
         if (self.author and tail is not None and
                 re.match(r"^我是" + re.escape(self.author) + r"[，,。]", lines[tail])):

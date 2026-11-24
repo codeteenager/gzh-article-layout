@@ -185,3 +185,6 @@ python3 <SKILL_ROOT>/scripts/render_stitch_article.py <文章.md> \
 添加后在 `references/theme-index.md` 登记一行（主题名 / 主色 / 适用场景 / 组件库文件 / 正文下划线 CSS），并跑 `python3 scripts/component_lint.py .` 确认组件库无反模式（0 ERROR）。
 
 > 触发与主题选择的回归用例见 `references/eval-cases.md`（维护时用于回归核对，不影响单次生成）。
+
+
+互动动作图标采用 Stitch 新方案配色：点赞与收藏为 `#4B5563`，分享为白色；分享底色保留当前主题主色（翡翠主题为 `#059669`）。顶部点赞徽章颜色不变，图标大小与卡片布局不变。

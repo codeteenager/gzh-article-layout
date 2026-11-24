@@ -209,6 +209,17 @@ class StitchTests(unittest.TestCase):
             self.assertNotIn("收藏方便回看", output)
             self.assertEqual(Text(output).text().count("点赞"), 1)
 
+    def test_action_icons_follow_new_stitch_palette(self):
+        for theme in catalog():
+            for layout in LAYOUTS:
+                value = component(theme["id"], "engagement_" + layout, message="提示")
+                icons = re.findall(r"<svg\b[^>]*>", value)
+                self.assertEqual(len(icons), 4)
+                self.assertIn('fill="#4B5563"', icons[1])
+                self.assertIn('stroke="#4B5563"', icons[2])
+                self.assertIn('fill="#ffffff"', icons[3])
+                self.assertNotIn("#4B5563", icons[0])
+
     def test_original_palette_comparison_has_the_same_source_content(self):
         from build_stitch_comparison import ORIGINAL
         from build_stitch_themes import load

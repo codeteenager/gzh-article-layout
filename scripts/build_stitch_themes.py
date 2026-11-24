@@ -1332,6 +1332,11 @@ def source_components():
                             label.children = ["收藏"]
                         elif label.text().strip() == "visibility":
                             label.children = ["engagement_bookmark"]
+                        if label.text().strip() in {"thumb_up", "engagement_bookmark"}:
+                            # New Stitch palette: neutral icons on white actions.
+                            # Scope to the action row; retain the top badge color.
+                            label.attrs["style"] = (
+                                label.attrs.get("style", "") + ";color:#4B5563;")
                 credit = value.elements()[-1]
                 credit.children = ["感谢阅读"]
             result[name+"_"+slug]=value

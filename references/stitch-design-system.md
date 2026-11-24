@@ -115,3 +115,6 @@ python3 scripts/render_stitch_article.py assets/sample-article.md \
 ### Stitch 收藏图标适配（2026-11-24）
 
 通过 Stitch `edit_screens` 获取收藏动作 UI 和描边书签 SVG，来源项目 `9891162362575619920`、新屏幕 `e8451821dbf54feaaa07de5b1d2019f0`。工具返回的 SVG 与来源信息保存在 `assets/stitch/engagement-bookmark/`；HTML 下载遇 DNS 故障，SVG 直接取工具返回代码，不冒充下载成功。只采用书签路径和推荐文案，保留原组件的 18px 图标尺寸、各色系中间动作配色及布局；不覆盖原始来源稿和冻结样式。默认动作为点赞／收藏／分享；用户自定义正文和互动提示不全局替换。
+
+
+互动动作图标采用 Stitch 新方案配色：点赞与收藏为 `#4B5563`，分享为白色；分享底色保留当前主题主色（翡翠主题为 `#059669`）。顶部点赞徽章颜色不变，图标大小与卡片布局不变。

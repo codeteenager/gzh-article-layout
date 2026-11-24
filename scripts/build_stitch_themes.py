@@ -14,7 +14,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from stitch_themes import (ROOT, LAYOUT_NAMES, declarations, escape_style_attribute,
-                           merge_text_leaf_spans)
+                           merge_text_leaf_spans, compact_templates)
 
 SOURCE = ROOT / "assets/stitch"
 VOID = {"img", "br", "hr", "meta", "link", "input"}
@@ -1656,7 +1656,7 @@ def build():
     write(SOURCE / "themes.json", json.dumps(themes, ensure_ascii=False, indent=2) + "\n")
     for theme in themes:
         templates = compile_templates(theme, nodes)
-        write(SOURCE / "templates" / (theme["id"] + ".json"), json.dumps(templates, ensure_ascii=False, indent=2) + "\n")
+        write(SOURCE / "templates" / (theme["id"] + ".json"), json.dumps(compact_templates(templates), ensure_ascii=False, indent=2) + "\n")
         write(ROOT / "references" / ("theme-" + theme["id"] + ".md"), reference(theme, templates))
     index = [
         "# 内置主题索引与选择决策表", "",

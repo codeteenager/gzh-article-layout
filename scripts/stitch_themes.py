@@ -83,9 +83,44 @@ def theme_by_id(theme_id):
 @lru_cache(maxsize=32)
 def templates(theme_id):
     theme_by_id(theme_id)
-    return json.loads(
+    return expand_templates(json.loads(
         (ROOT / "assets/stitch/templates" / (theme_id + ".json")).read_text(encoding="utf-8")
-    )
+    ))
+
+
+def compact_templates(values):
+    """Store byte-identical HTML once; aliases always target a literal string."""
+    result, owners = {}, {}
+    for name, value in values.items():
+        if not isinstance(value, str):
+            raise ValueError("模板必须为 HTML 字符串：" + name)
+        if value in owners:
+            result[name] = {"$ref": owners[value]}
+        else:
+            owners[value] = name
+            result[name] = value
+    return result
+
+
+def expand_templates(values):
+    """Preserve the public string mapping and accept legacy uncompressed files.
+
+    References are one-hop and local to this file, never paths or template slots.
+    Reject chains, cycles, missing targets and malformed entries explicitly.
+    """
+    if not isinstance(values, dict):
+        raise ValueError("模板文件必须为对象")
+    result = {}
+    for name, value in values.items():
+        if isinstance(value, str):
+            result[name] = value
+        elif (isinstance(value, dict) and set(value) == {"$ref"}
+              and isinstance(value["$ref"], str)
+              and isinstance(values.get(value["$ref"]), str)):
+            result[name] = values[value["$ref"]]
+        else:
+            raise ValueError("无效模板或引用：" + name)
+    return result
 
 
 def component(theme_id, name, **fields):

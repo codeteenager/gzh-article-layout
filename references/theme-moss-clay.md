@@ -23,6 +23,10 @@
 
 ## 各组件完整 HTML
 
+完全相同的 HTML 在本文件中只展示一次；标注“HTML 同组件”的条目，按组件键查找对应完整定义。
+引用仅指向本文件中有完整 HTML 的组件，不跨文件、不连续引用；各组件名称及其父容器使用约束仍独立保留。
+只有逐字相同的 HTML 才合并；外观相近但继承环境或样式不同的组件不合并。
+
 ### 封面折页 · `hero`
 
 ```html
@@ -145,15 +149,11 @@
 
 ### hero_ruler · `hero_ruler`
 
-```html
-<section style="overflow:hidden;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;font-size:14px;line-height:26.6px;margin:0 0 24px;background:#fff;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="width:100%;height:4px;background:#4D7C0F;"></section><section style="box-sizing:border-box;display:flex;flex-direction:column;gap:14px;padding:20px;"><section style="display:flex;align-items:center;justify-content:space-between;"><section style="display:flex;align-items:center;gap:8px;letter-spacing:.24px;"><span style="box-sizing:border-box;font-size:12px;line-height:16px;border-radius:9999px;display:flex;align-items:center;gap:4px;padding:2px 10px;background:#4D7C0F;font-weight:700;color:#fff;"><span style="width:6px;height:6px;border-radius:9999px;opacity:.619231;background:#C4DE9B;"></span><span leaf="">{{category}}</span></span><span style="box-sizing:border-box;font-size:12px;line-height:16px;border-radius:9999px;display:flex;align-items:center;padding:2px 8px;background:rgba(196,222,155,.5);font-weight:500;color:#1A2E05;"><span leaf="">{{meta}}</span></span></section><span leaf="" style="font-size:12px;line-height:18px;color:#6d7a72;">{{credit}}</span></section><section style="box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:4px 0 0;"><h1 style="box-sizing:border-box;font-size:26px;line-height:35.75px;color:#4D7C0F;letter-spacing:-.65px;font-weight:800;margin:0;border:0;padding:0;"><span leaf="">{{title}}</span></h1><p style="font-size:15px;line-height:28px;margin:0;padding:0;font-weight:500;letter-spacing:.45px;color:#3d4a42;"><span leaf="">{{subtitle}}</span></p></section></section></section>
-```
+HTML 同组件：`hero`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### quote_ruler · `quote_ruler`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;overflow:hidden;font-size:14px;line-height:26.6px;display:flex;gap:12px;padding:20px 20px 20px 14px;margin:0 0 24px;background:#fff;border:0;border-left:6px solid #4D7C0F;font-weight:400;letter-spacing:.5px;color:#121c2a;"><span leaf="" style="line-height:32px;font-size:32px;margin-top:-8px;color:rgba(77,124,15,.3);">“</span><section style="display:flex;flex-direction:column;gap:6px;"><section style="font-size:15px;line-height:24.375px;font-weight:500;letter-spacing:.45px;">{{body_html}}</section><span leaf="" style="font-size:12px;line-height:18px;align-self:flex-end;letter-spacing:.6px;color:#6d7a72;">{{attribution}}</span></section><span leaf="" style="line-height:32px;font-size:32px;align-self:flex-end;margin-bottom:-16px;color:rgba(77,124,15,.3);">”</span></section>
-```
+HTML 同组件：`quote`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_item_ruler · `toc_item_ruler`
 
@@ -205,21 +205,15 @@
 
 ### quote_overprint · `quote_overprint`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;overflow:hidden;font-size:14px;line-height:26.6px;display:flex;gap:12px;padding:20px 20px 20px 14px;margin:0 0 24px;background:#fff;border:0;border-left:6px solid #4D7C0F;font-weight:400;letter-spacing:.5px;color:#121c2a;"><span leaf="" style="line-height:32px;font-size:32px;margin-top:-8px;color:rgba(77,124,15,.3);">“</span><section style="display:flex;flex-direction:column;gap:6px;"><section style="font-size:15px;line-height:24.375px;font-weight:500;letter-spacing:.45px;">{{body_html}}</section><span leaf="" style="font-size:12px;line-height:18px;align-self:flex-end;letter-spacing:.6px;color:#6d7a72;">{{attribution}}</span></section><span leaf="" style="line-height:32px;font-size:32px;align-self:flex-end;margin-bottom:-16px;color:rgba(77,124,15,.3);">”</span></section>
-```
+HTML 同组件：`quote`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_item_overprint · `toc_item_overprint`
 
-```html
-<section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;font-size:14px;line-height:26.6px;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(77,124,15,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#4D7C0F;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;font-size:11px;line-height:17.875px;display:flow-root;margin:4px 0 0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
-```
+HTML 同组件：`toc_item_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_overprint · `toc_overprint`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;gap:14px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;font-size:14px;line-height:26.6px;border:1px solid rgba(230,238,255,.6);padding:16px;margin:0 0 24px;background:#fff;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-width:0 0 1px;border-style:solid;border-color:rgba(222,233,253,.5);padding:0 0 8px;"><section style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:14px;border-radius:9999px;background:#4D7C0F;"></span><span leaf="" style="font-size:15px;font-weight:700;letter-spacing:-.375px;">文章导读与章节索引</span></section><span leaf="" style="font-size:11px;color:#6d7a72;">{{toc_hint}}</span></section><section style="box-sizing:border-box;display:flex;overflow-x:auto;gap:12px;padding:4px 0 8px;">{{items_html}}</section></section>
-```
+HTML 同组件：`toc_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### signature_no_qr_overprint · `signature_no_qr_overprint`
 
@@ -235,9 +229,7 @@
 
 ### engagement_overprint · `engagement_overprint`
 
-```html
-<section style="box-sizing:border-box;border-radius:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;font-size:14px;line-height:26.6px;padding:24px;margin:0 0 24px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#A7CC6F;"><span style="line-height:20px;font-size:20px;letter-spacing:normal;color:#1A2E05;"><svg style="display:block;flex-shrink:0;" fill="#1A2E05" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;max-width:420px;"><h3 style="box-sizing:border-box;font-size:16px;line-height:24px;font-weight:700;color:#121c2a;letter-spacing:.5px;margin:0;border:0;padding:0;"><span leaf="">既然看到这里了</span></h3><p style="font-size:13px;line-height:20px;margin:0;padding:0;color:#3d4a42;"><span leaf="">{{message}}</span></p></section><section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:8px 0 0;"><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" fill="#4B5563" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span><span leaf="">点赞</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span><span leaf="">收藏</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#4D7C0F;font-weight:600;letter-spacing:.24px;color:#fff;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;"><svg style="display:block;flex-shrink:0;" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-640q17 0 28.5-11.5T760-760q0-17-11.5-28.5T720-800q-17 0-28.5 11.5T680-760q0 17 11.5 28.5T720-720ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Zm0-600ZM240-480Zm480 280Z"/></svg></span><span leaf="">分享</span></span></section><span leaf="" style="box-sizing:border-box;font-size:11px;padding:8px 0 0;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;letter-spacing:1.1px;color:#6d7a72;">感谢阅读</span></section>
-```
+HTML 同组件：`engagement_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 浮光·透叠数字 · `chapter_overprint`
 
@@ -253,21 +245,15 @@
 
 ### quote_pure · `quote_pure`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;overflow:hidden;font-size:14px;line-height:26.6px;display:flex;gap:12px;padding:20px 20px 20px 14px;margin:0 0 24px;background:#fff;border:0;border-left:6px solid #4D7C0F;font-weight:400;letter-spacing:.5px;color:#121c2a;"><span leaf="" style="line-height:32px;font-size:32px;margin-top:-8px;color:rgba(77,124,15,.3);">“</span><section style="display:flex;flex-direction:column;gap:6px;"><section style="font-size:15px;line-height:24.375px;font-weight:500;letter-spacing:.45px;">{{body_html}}</section><span leaf="" style="font-size:12px;line-height:18px;align-self:flex-end;letter-spacing:.6px;color:#6d7a72;">{{attribution}}</span></section><span leaf="" style="line-height:32px;font-size:32px;align-self:flex-end;margin-bottom:-16px;color:rgba(77,124,15,.3);">”</span></section>
-```
+HTML 同组件：`quote`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_item_pure · `toc_item_pure`
 
-```html
-<section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;font-size:14px;line-height:26.6px;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(77,124,15,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#4D7C0F;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;font-size:11px;line-height:17.875px;display:flow-root;margin:4px 0 0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
-```
+HTML 同组件：`toc_item_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_pure · `toc_pure`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;gap:14px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;font-size:14px;line-height:26.6px;border:1px solid rgba(230,238,255,.6);padding:16px;margin:0 0 24px;background:#fff;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-width:0 0 1px;border-style:solid;border-color:rgba(222,233,253,.5);padding:0 0 8px;"><section style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:14px;border-radius:9999px;background:#4D7C0F;"></span><span leaf="" style="font-size:15px;font-weight:700;letter-spacing:-.375px;">文章导读与章节索引</span></section><span leaf="" style="font-size:11px;color:#6d7a72;">{{toc_hint}}</span></section><section style="box-sizing:border-box;display:flex;overflow-x:auto;gap:12px;padding:4px 0 8px;">{{items_html}}</section></section>
-```
+HTML 同组件：`toc_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### signature_no_qr_pure · `signature_no_qr_pure`
 
@@ -283,9 +269,7 @@
 
 ### engagement_pure · `engagement_pure`
 
-```html
-<section style="box-sizing:border-box;border-radius:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;font-size:14px;line-height:26.6px;padding:24px;margin:0 0 24px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#A7CC6F;"><span style="line-height:20px;font-size:20px;letter-spacing:normal;color:#1A2E05;"><svg style="display:block;flex-shrink:0;" fill="#1A2E05" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;max-width:420px;"><h3 style="box-sizing:border-box;font-size:16px;line-height:24px;font-weight:700;color:#121c2a;letter-spacing:.5px;margin:0;border:0;padding:0;"><span leaf="">既然看到这里了</span></h3><p style="font-size:13px;line-height:20px;margin:0;padding:0;color:#3d4a42;"><span leaf="">{{message}}</span></p></section><section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:8px 0 0;"><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" fill="#4B5563" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span><span leaf="">点赞</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span><span leaf="">收藏</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#4D7C0F;font-weight:600;letter-spacing:.24px;color:#fff;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;"><svg style="display:block;flex-shrink:0;" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-640q17 0 28.5-11.5T760-760q0-17-11.5-28.5T720-800q-17 0-28.5 11.5T680-760q0 17 11.5 28.5T720-720ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Zm0-600ZM240-480Zm480 280Z"/></svg></span><span leaf="">分享</span></span></section><span leaf="" style="box-sizing:border-box;font-size:11px;padding:8px 0 0;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;letter-spacing:1.1px;color:#6d7a72;">感谢阅读</span></section>
-```
+HTML 同组件：`engagement_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 素墨·克制留白 · `chapter_pure`
 
@@ -295,27 +279,19 @@
 
 ### 横滑目录 · `toc`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;gap:14px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;font-size:14px;line-height:26.6px;border:1px solid rgba(230,238,255,.6);padding:16px;margin:0 0 24px;background:#fff;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-width:0 0 1px;border-style:solid;border-color:rgba(222,233,253,.5);padding:0 0 8px;"><section style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:14px;border-radius:9999px;background:#4D7C0F;"></span><span leaf="" style="font-size:15px;font-weight:700;letter-spacing:-.375px;">文章导读与章节索引</span></section><span leaf="" style="font-size:11px;color:#6d7a72;">{{toc_hint}}</span></section><section style="box-sizing:border-box;display:flex;overflow-x:auto;gap:12px;padding:4px 0 8px;">{{items_html}}</section></section>
-```
+HTML 同组件：`toc_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 目录项 · `toc_item`
 
-```html
-<section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;font-size:14px;line-height:26.6px;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(77,124,15,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#4D7C0F;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;font-size:11px;line-height:17.875px;display:flow-root;margin:4px 0 0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
-```
+HTML 同组件：`toc_item_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 文末压舱名片 · `signature`
 
-```html
-<section style="margin:0 0 24px;"><section style="box-sizing:border-box;overflow:hidden;border-radius:16px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;box-shadow:rgba(26,46,5,.25) 0 4px 20px;background:#1A2E05;color:#fff;"><section style="display:flex;flex-direction:column;min-width:0;flex:1;"><section style="display:flex;align-items:center;gap:10px;"><section style="font-size:14px;line-height:26.6px;letter-spacing:.5px;display:flex;flex:none;align-items:center;justify-content:center;border-radius:8px;width:32px;height:32px;background:#4D7C0F;font-weight:700;"><span leaf="">{{initial}}</span></section><span leaf="" style="font-size:16px;line-height:26.6px;letter-spacing:-.01em;font-weight:700;">{{author}}</span></section><p style="font-size:12px;line-height:1.5;letter-spacing:.5px;padding:0;margin:6px 0 8px;font-weight:400;color:#C9DFAA;"><span leaf="">{{bio}}</span></p><section style="font-size:11px;line-height:26.6px;letter-spacing:.5px;display:flex;align-items:center;gap:6px;font-weight:400;color:#65A30D;"><span leaf="">●</span><span leaf="">{{signature_note}}</span></section></section><section style="box-sizing:border-box;font-size:14px;line-height:26.6px;letter-spacing:.5px;display:flex;flex-direction:column;flex:none;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15);background:#fff;width:88px;padding:8px 10px;font-weight:400;"><img src="{{qr_url}}" alt="WeChat QR Code" style="box-sizing:border-box;margin-top:0;margin-bottom:0;width:72px;height:72px;object-fit:contain;max-width:100%;border:0;padding:0;"><span leaf="" style="font-size:11px;letter-spacing:.05em;margin-top:4px;text-align:center;font-weight:bold;color:#1A2E05;">{{qr_caption}}</span></section></section></section>
-```
+HTML 同组件：`signature_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 文末互动卡片（静态图标动作行） · `engagement`
 
-```html
-<section style="box-sizing:border-box;border-radius:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;font-size:14px;line-height:26.6px;padding:24px;margin:0 0 24px;background:#F7FEE7;font-weight:400;letter-spacing:.5px;color:#121c2a;"><section style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#A7CC6F;"><span style="line-height:20px;font-size:20px;letter-spacing:normal;color:#1A2E05;"><svg style="display:block;flex-shrink:0;" fill="#1A2E05" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;max-width:420px;"><h3 style="box-sizing:border-box;font-size:16px;line-height:24px;font-weight:700;color:#121c2a;letter-spacing:.5px;margin:0;border:0;padding:0;"><span leaf="">既然看到这里了</span></h3><p style="font-size:13px;line-height:20px;margin:0;padding:0;color:#3d4a42;"><span leaf="">{{message}}</span></p></section><section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:8px 0 0;"><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" fill="#4B5563" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span><span leaf="">点赞</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span><span leaf="">收藏</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#4D7C0F;font-weight:600;letter-spacing:.24px;color:#fff;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;"><svg style="display:block;flex-shrink:0;" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-640q17 0 28.5-11.5T760-760q0-17-11.5-28.5T720-800q-17 0-28.5 11.5T680-760q0 17 11.5 28.5T720-720ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Zm0-600ZM240-480Zm480 280Z"/></svg></span><span leaf="">分享</span></span></section><span leaf="" style="box-sizing:border-box;font-size:11px;padding:8px 0 0;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;letter-spacing:1.1px;color:#6d7a72;">感谢阅读</span></section>
-```
+HTML 同组件：`engagement_ruler`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 全局容器 · `container`
 
@@ -361,15 +337,11 @@
 
 ### toc_item_overprint（目录容器内） · `toc_item_overprint_in_toc`
 
-```html
-<section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#F7FEE7;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(77,124,15,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#4D7C0F;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;font-size:11px;line-height:17.875px;display:flow-root;margin:4px 0 0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
-```
+HTML 同组件：`toc_item_ruler_in_toc`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### toc_item_pure（目录容器内） · `toc_item_pure_in_toc`
 
-```html
-<section style="box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;flex:0 0 230px;width:230px;min-width:230px;max-width:230px;border:1px solid rgba(230,238,255,.5);padding:14px;background:#F7FEE7;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;"><span leaf="" style="box-sizing:border-box;font-size:11px;border-radius:4px;padding:2px 8px;background:rgba(77,124,15,.1);font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;font-weight:700;color:#4D7C0F;">{{number}}</span><span style="line-height:16px;font-size:16px;letter-spacing:normal;color:#6d7a72;"><svg style="display:block;flex-shrink:0;" fill="#6d7a72" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;"><span leaf="" style="line-height:19.25px;font-weight:700;">{{title}}</span><p style="box-sizing:border-box;font-size:11px;line-height:17.875px;display:flow-root;margin:4px 0 0;border-width:1px 0 0;border-style:solid;border-color:rgba(222,233,253,.4);padding:4px 0 0;color:#3d4a42;"><span leaf="">{{description}}</span></p></section></section>
-```
+HTML 同组件：`toc_item_ruler_in_toc`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 正文段落（文章容器内） · `paragraph_in_article`
 
@@ -385,9 +357,7 @@
 
 ### 脚注（文章容器内） · `footnote_in_article`
 
-```html
-<p style="margin:8px 0;line-height:1.7;color:#6d7a72;"><span leaf="">{{number}} {{body_html}}</span></p>
-```
+HTML 同组件：`footnote`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### hero_ruler（文章容器内） · `hero_ruler_in_article`
 
@@ -439,9 +409,7 @@
 
 ### quote_overprint（文章容器内） · `quote_overprint_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;overflow:hidden;display:flex;gap:12px;padding:20px 20px 20px 14px;margin:0 0 24px;background:#fff;border:0;border-left:6px solid #4D7C0F;color:#121c2a;"><span leaf="" style="line-height:32px;font-size:32px;margin-top:-8px;color:rgba(77,124,15,.3);">“</span><section style="display:flex;flex-direction:column;gap:6px;"><section style="font-size:15px;line-height:24.375px;font-weight:500;letter-spacing:.45px;">{{body_html}}</section><span leaf="" style="font-size:12px;line-height:18px;align-self:flex-end;letter-spacing:.6px;color:#6d7a72;">{{attribution}}</span></section><span leaf="" style="line-height:32px;font-size:32px;align-self:flex-end;margin-bottom:-16px;color:rgba(77,124,15,.3);">”</span></section>
-```
+HTML 同组件：`quote_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 浮光·透叠数字（文章容器内） · `chapter_overprint_in_article`
 
@@ -451,9 +419,7 @@
 
 ### toc_overprint（文章容器内） · `toc_overprint_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;gap:14px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;border:1px solid rgba(230,238,255,.6);padding:16px;margin:0 0 24px;background:#fff;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-width:0 0 1px;border-style:solid;border-color:rgba(222,233,253,.5);padding:0 0 8px;"><section style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:14px;border-radius:9999px;background:#4D7C0F;"></span><span leaf="" style="font-size:15px;font-weight:700;letter-spacing:-.375px;">文章导读与章节索引</span></section><span leaf="" style="font-size:11px;color:#6d7a72;">{{toc_hint}}</span></section><section style="box-sizing:border-box;display:flex;overflow-x:auto;gap:12px;padding:4px 0 8px;">{{items_html}}</section></section>
-```
+HTML 同组件：`toc_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### signature_overprint（文章容器内） · `signature_overprint_in_article`
 
@@ -469,9 +435,7 @@
 
 ### engagement_overprint（文章容器内） · `engagement_overprint_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:24px;margin:0 0 24px;background:#F7FEE7;color:#121c2a;"><section style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#A7CC6F;"><span style="line-height:20px;font-size:20px;letter-spacing:normal;color:#1A2E05;"><svg style="display:block;flex-shrink:0;" fill="#1A2E05" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;max-width:420px;"><h3 style="box-sizing:border-box;font-size:16px;line-height:24px;font-weight:700;color:#121c2a;letter-spacing:.5px;margin:0;border:0;padding:0;"><span leaf="">既然看到这里了</span></h3><p style="font-size:13px;line-height:20px;margin:0;padding:0;color:#3d4a42;"><span leaf="">{{message}}</span></p></section><section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:8px 0 0;"><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" fill="#4B5563" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span><span leaf="">点赞</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span><span leaf="">收藏</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#4D7C0F;font-weight:600;letter-spacing:.24px;color:#fff;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;"><svg style="display:block;flex-shrink:0;" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-640q17 0 28.5-11.5T760-760q0-17-11.5-28.5T720-800q-17 0-28.5 11.5T680-760q0 17 11.5 28.5T720-720ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Zm0-600ZM240-480Zm480 280Z"/></svg></span><span leaf="">分享</span></span></section><span leaf="" style="box-sizing:border-box;font-size:11px;padding:8px 0 0;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;letter-spacing:1.1px;color:#6d7a72;">感谢阅读</span></section>
-```
+HTML 同组件：`engagement_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### hero_pure（文章容器内） · `hero_pure_in_article`
 
@@ -481,9 +445,7 @@
 
 ### quote_pure（文章容器内） · `quote_pure_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;overflow:hidden;display:flex;gap:12px;padding:20px 20px 20px 14px;margin:0 0 24px;background:#fff;border:0;border-left:6px solid #4D7C0F;color:#121c2a;"><span leaf="" style="line-height:32px;font-size:32px;margin-top:-8px;color:rgba(77,124,15,.3);">“</span><section style="display:flex;flex-direction:column;gap:6px;"><section style="font-size:15px;line-height:24.375px;font-weight:500;letter-spacing:.45px;">{{body_html}}</section><span leaf="" style="font-size:12px;line-height:18px;align-self:flex-end;letter-spacing:.6px;color:#6d7a72;">{{attribution}}</span></section><span leaf="" style="line-height:32px;font-size:32px;align-self:flex-end;margin-bottom:-16px;color:rgba(77,124,15,.3);">”</span></section>
-```
+HTML 同组件：`quote_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 素墨·克制留白（文章容器内） · `chapter_pure_in_article`
 
@@ -493,9 +455,7 @@
 
 ### toc_pure（文章容器内） · `toc_pure_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:12px;display:flex;flex-direction:column;gap:14px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;border:1px solid rgba(230,238,255,.6);padding:16px;margin:0 0 24px;background:#fff;color:#121c2a;"><section style="box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-width:0 0 1px;border-style:solid;border-color:rgba(222,233,253,.5);padding:0 0 8px;"><section style="display:flex;align-items:center;gap:8px;"><span style="width:6px;height:14px;border-radius:9999px;background:#4D7C0F;"></span><span leaf="" style="font-size:15px;font-weight:700;letter-spacing:-.375px;">文章导读与章节索引</span></section><span leaf="" style="font-size:11px;color:#6d7a72;">{{toc_hint}}</span></section><section style="box-sizing:border-box;display:flex;overflow-x:auto;gap:12px;padding:4px 0 8px;">{{items_html}}</section></section>
-```
+HTML 同组件：`toc_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### signature_pure（文章容器内） · `signature_pure_in_article`
 
@@ -511,9 +471,7 @@
 
 ### engagement_pure（文章容器内） · `engagement_pure_in_article`
 
-```html
-<section style="box-sizing:border-box;border-radius:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:24px;margin:0 0 24px;background:#F7FEE7;color:#121c2a;"><section style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#A7CC6F;"><span style="line-height:20px;font-size:20px;letter-spacing:normal;color:#1A2E05;"><svg style="display:block;flex-shrink:0;" fill="#1A2E05" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span></section><section style="display:flex;flex-direction:column;gap:4px;max-width:420px;"><h3 style="box-sizing:border-box;font-size:16px;line-height:24px;font-weight:700;color:#121c2a;letter-spacing:.5px;margin:0;border:0;padding:0;"><span leaf="">既然看到这里了</span></h3><p style="font-size:13px;line-height:20px;margin:0;padding:0;color:#3d4a42;"><span leaf="">{{message}}</span></p></section><section style="box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;justify-content:center;padding:8px 0 0;"><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" fill="#4B5563" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg></span><span leaf="">点赞</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#fff;font-weight:600;letter-spacing:.24px;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;color:#4B5563;"><svg style="display:block;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span><span leaf="">收藏</span></span><span style="box-sizing:border-box;flex:1 1 0%;min-width:0;max-width:110px;border-radius:12px;font-size:12px;line-height:16px;box-shadow:rgba(0,0,0,.05) 0 1px 2px 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#4D7C0F;font-weight:600;letter-spacing:.24px;color:#fff;"><span style="line-height:18px;font-size:18px;font-weight:400;letter-spacing:normal;"><svg style="display:block;flex-shrink:0;" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-640q17 0 28.5-11.5T760-760q0-17-11.5-28.5T720-800q-17 0-28.5 11.5T680-760q0 17 11.5 28.5T720-720ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Zm0-600ZM240-480Zm480 280Z"/></svg></span><span leaf="">分享</span></span></section><span leaf="" style="box-sizing:border-box;font-size:11px;padding:8px 0 0;font-family:JetBrains Mono,SF Mono,Consolas,Monaco,monospace;letter-spacing:1.1px;color:#6d7a72;">感谢阅读</span></section>
-```
+HTML 同组件：`engagement_ruler_in_article`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 列表容器（与列表内变体配套） · `list_with_items`
 
@@ -541,9 +499,7 @@
 
 ### 全局容器（文章容器内） · `container_in_article`
 
-```html
-<section style="max-width:677px;margin:0 auto;padding:20px 16px;background:#FFF;font-size:14px;line-height:26.6px;box-sizing:border-box;overflow-wrap:anywhere;font-family:-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif;font-weight:400;letter-spacing:.5px;color:#3d4a42;">{{body_html}}</section>
-```
+HTML 同组件：`container`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 步骤标题（文章容器内） · `step_in_article`
 
@@ -583,9 +539,7 @@
 
 ### 微点分割线（文章容器内） · `divider_in_article`
 
-```html
-<p style="margin:24px 0;text-align:center;letter-spacing:8px;color:#6d7a72;"><span leaf="">· · ·</span></p>
-```
+HTML 同组件：`divider`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。
 
 ### 列表容器（与列表内变体配套）（文章容器内） · `list_with_items_in_article`
 
@@ -604,7 +558,7 @@
 `container` → `hero` → 开头原文引言（若有，`quote`）→ `toc`（精选最多 3 项）→
 `chapter_pure` + 原文段落/列表/代码/表格/图片 → `signature` → `engagement`。
 目录放在封面和开头引言之后；正文不得用组件库演示文案替换。
-签名与互动各仅一次；已有署名沿用原文，未给署名保留 `{{作者名}}` / `{{简介}}`。
+名片与互动各最多一次；默认不传作者、不生成名片，原文署名作为正文保留。仅用户明确要求名片并提供真实作者信息时传 --author；简介和二维码仅使用用户提供的内容，不填默认值或占位符。
 原稿二维码为演示素材，仅画廊与对照页显式使用；生成文章用 --qr-url 提供真实二维码，保留 88px 右栏、72px 图片与关注提示。无二维码时使用明确的无二维码名片变体。
 纯净版不强塞可见章节编号；墨规与浮光按 H2 顺序使用 01/02/03。
 

@@ -52,6 +52,7 @@ assets/stitch/ 原稿 HTML + resolved-*.json/css + manifests + icons
 
 - 内置主题应修改编译器或经授权更新来源，再重建；不要只手改生成的 JSON、组件 HTML 或画廊来修复问题。
 - 模板 JSON 中完全相同的 HTML 通过 `{"$ref":"组件名"}` 单层引用去重；引用仅指向同文件中的字符串，不允许链式引用。运行时 `templates()` 展开为原有字符串映射，组件名与最终 HTML 不变；读取模板应使用该入口，不直接假定 JSON 值全是字符串。
+- 生成的主题 Markdown 也只展示一份逐字相同的 HTML，其余组件保留标题，以“HTML 同组件”指向本文件内的完整定义；不跨文件、不链式引用。组件名称和父容器约束不合并，`test_reference_storage.py` 校验全部组件解析后与运行时模板逐字一致。
 - `references/theme-index.md` 是 Agent 选主题的注册入口；离线渲染器实际从 `assets/stitch/themes.json` 和 `templates/*.json` 读取，两者必须一致。
 - `manifest.json` 记录五份来源 HTML 的 SHA-256；`resolved-manifest.json` 记录来源及冻结计算样式的摘要。样式映射依赖原节点的 tag/class/style/文本索引，修改原文也可能影响匹配。
 - 修改来源必须同步对应索引、摘要及来源说明；不要通过随意改摘要掩盖无法解释的来源差异，也不要把本地文字定制说成重新抓取远程设计。

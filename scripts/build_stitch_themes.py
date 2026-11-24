@@ -1601,7 +1601,11 @@ def reference(theme, templates):
         "| 默认章节版式 | " + LAYOUT_NAMES[theme["layout"]] + "（可在三版式中明确切换） |",
         "| 正文下划线 CSS | `border-bottom:2px solid " + theme["accent"] + ";font-weight:600;` |", "",
         "## 各组件完整 HTML", "",
+        "完全相同的 HTML 在本文件中只展示一次；标注“HTML 同组件”的条目，按组件键查找对应完整定义。",
+        "引用仅指向本文件中有完整 HTML 的组件，不跨文件、不连续引用；各组件名称及其父容器使用约束仍独立保留。",
+        "只有逐字相同的 HTML 才合并；外观相近但继承环境或样式不同的组件不合并。", "",
     ]
+    canonical = {}
     for key, value in templates.items():
         label = DISPLAY.get(key, key)
         for suffix, context in (("_in_article", "（文章容器内）"), ("_in_toc", "（目录容器内）"),
@@ -1609,13 +1613,18 @@ def reference(theme, templates):
             if key.endswith(suffix):
                 base = key.removesuffix(suffix)
                 label = DISPLAY.get(base, base) + context
-        lines += ["### " + label + " · `" + key + "`", "", "```html", value, "```", ""]
+        lines += ["### " + label + " · `" + key + "`", ""]
+        if value in canonical:
+            lines += ["HTML 同组件：`" + canonical[value] + "`。仅复用 HTML，使用位置仍按本条组件名及父容器约束。", ""]
+        else:
+            canonical[value] = key
+            lines += ["```html", value, "```", ""]
     lines += [
         "## 完整文章模板骨架", "",
         "`container` → `hero` → 开头原文引言（若有，`quote`）→ `toc`（精选最多 3 项）→",
         "`chapter_" + theme["layout"] + "` + 原文段落/列表/代码/表格/图片 → `signature` → `engagement`。",
         "目录放在封面和开头引言之后；正文不得用组件库演示文案替换。",
-        "签名与互动各仅一次；已有署名沿用原文，未给署名保留 `{{作者名}}` / `{{简介}}`。",
+        "名片与互动各最多一次；默认不传作者、不生成名片，原文署名作为正文保留。仅用户明确要求名片并提供真实作者信息时传 --author；简介和二维码仅使用用户提供的内容，不填默认值或占位符。",
         "原稿二维码为演示素材，仅画廊与对照页显式使用；生成文章用 --qr-url 提供真实二维码，保留 88px 右栏、72px 图片与关注提示。无二维码时使用明确的无二维码名片变体。",
         "纯净版不强塞可见章节编号；墨规与浮光按 H2 顺序使用 01/02/03。", "",
         "## 文章类型 → 组件组合配方表", "",

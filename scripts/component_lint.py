@@ -41,7 +41,8 @@ CENTERED = re.compile(r"text-align\s*:\s*center", re.I)
 
 
 def lint_file(path):
-    text = open(path, encoding="utf-8", errors="replace").read()
+    with open(path, encoding="utf-8", errors="replace") as source:
+        text = source.read()
     name = os.path.basename(path).replace("公众号排版组件库 —— ", "").replace(".md", "")
     found = []  # (level, msg)
     seen = set()

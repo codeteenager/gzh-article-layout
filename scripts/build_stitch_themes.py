@@ -1124,6 +1124,12 @@ class Compiler:
             styles.update({"margin-top": "%gpx" % -padding, "margin-left": "%gpx" % -padding,
                            "margin-right": "%gpx" % -padding, "margin-bottom": "%gpx" % (padding-height-gap), "width": "auto"})
         gradient = styles.pop("background-image", "none")
+        if (not text and not node.elements() and styles.get("height") == "4px"
+                and gradient.startswith("linear-gradient(to right,")):
+            # The title strip uses the selected theme's primary solid colour.
+            # Other ornaments retain the existing compatibility conversion.
+            return ('<section style="width:100%%;height:4px;background:%s;"></section>'
+                    % html.escape(self.theme["primary"], quote=True))
         if node.tag == "img":
             styles.update({"max-width": "100%", "display": "block"})
             if "QR Code" not in node.attrs.get("alt", ""):

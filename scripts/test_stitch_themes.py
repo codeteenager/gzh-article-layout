@@ -88,6 +88,16 @@ print("最后一行")
 
 
 class StitchTests(unittest.TestCase):
+    def test_title_strip_uses_selected_primary_colour(self):
+        for theme in catalog():
+            for layout in LAYOUTS:
+                with self.subTest(theme=theme["id"], layout=layout):
+                    output = Renderer(theme["id"], layout).render("# 测试标题\n\n正文。")
+                    self.assertIn(
+                        '<section style="width:100%;height:4px;background:'
+                        + theme["primary"] + ';"></section>', output)
+                    self.assertNotIn("linear-gradient(", output)
+
     def test_15_exact_source_colorways(self):
         self.assertEqual(catalog(), extract_catalog())
         self.assertEqual(len(catalog()), 15)

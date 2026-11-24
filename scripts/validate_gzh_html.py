@@ -52,7 +52,6 @@ GRADIENT_BACKGROUND = re.compile(
     r"(?:^|;)\s*background(?:-image)?\s*:[^;]*\b"
     r"(?:repeating-)?(?:linear|radial|conic)-gradient\s*\(", re.I)
 
-
 class LeafChecker(HTMLParser):
     """检查每个非空文本节点是否处于 <span leaf> 内。"""
 

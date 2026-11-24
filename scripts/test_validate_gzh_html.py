@@ -14,6 +14,18 @@ def fragment(style):
 
 
 class GradientBackgroundTests(unittest.TestCase):
+    def test_title_strip_gradients_are_not_exempt(self):
+        strip = ('<section style="width:100%;height:4px;background:'
+                 'linear-gradient(to right,#059669,#34D399);"></section>')
+        self.assertTrue(any(WARNING_ID in w for w in validate(strip)[1]))
+        solid = strip.replace("linear-gradient(to right,#059669,#34D399)", "#059669")
+        self.assertEqual(validate(solid)[:2], ([], []))
+        for changed in (
+                strip.replace("4px", "40px"),
+                strip.replace("></section>", '><span leaf="">文字</span></section>'),
+                strip.replace("width:100%;", "width:100%;padding:20px;")):
+            self.assertTrue(any(WARNING_ID in w for w in validate(changed)[1]))
+
     def test_background_styles(self):
         cases = [
             ("issue radial", fragment("background:radial-gradient(circle at 30% 0%,#FAFAFA,#FFFFFF)"), 1),

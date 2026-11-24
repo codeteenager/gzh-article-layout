@@ -296,6 +296,83 @@ def short_box(values):
     return " ".join(values)
 
 
+def minimize_template_declarations(value):
+    """Final, bounded declaration folding; never optimize filled article HTML.
+
+    Resolve physical spacing in declaration order, without inventing unspecified
+    sides. Logical properties, CSS-wide values, functions and important rules
+    deliberately keep their original serialization.
+    """
+    def minimize(match):
+        original = html.unescape(match[1])
+        pairs = declarations(original)
+        if any(key in {"all", "direction", "writing-mode"} or key.startswith("--")
+               or "!important" in val for key, val in pairs):
+            return match[0]
+        for base in ("margin", "padding"):
+            keys = [base + "-" + side for side in ("top", "right", "bottom", "left")]
+            relevant = [(i, key, val) for i, (key, val) in enumerate(pairs)
+                        if key == base or key.startswith(base + "-")]
+            if not relevant or any(key not in [base] + keys for _, key, _ in relevant):
+                continue
+            resolved = {}
+            valid = True
+            for _, key, val in relevant:
+                tokens = val.split()
+                if (not 1 <= len(tokens) <= (4 if key == base else 1) or
+                        not all(re.fullmatch(r"(?:auto|0|[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|%))",
+                                             token) for token in tokens) or
+                        (base == "padding" and any(
+                            token == "auto" or token.startswith("-") for token in tokens))):
+                    valid = False
+                    break
+                if key == base:
+                    top = tokens[0]
+                    right = tokens[1] if len(tokens) > 1 else top
+                    bottom = tokens[2] if len(tokens) > 2 else top
+                    left = tokens[3] if len(tokens) > 3 else right
+                    resolved.update(zip(keys, (top, right, bottom, left)))
+                else:
+                    resolved[key] = val
+            if not valid or len(resolved) != 4:
+                continue
+            replacement = (base, short_box([resolved[key] for key in keys]))
+            # Do not expand already shorter forms or change unrelated ordering.
+            old_size = sum(len(key) + len(val) + 2 for _, key, val in relevant)
+            if len(replacement[0]) + len(replacement[1]) + 2 >= old_size:
+                continue
+            indices = {i for i, _, _ in relevant}
+            last = relevant[-1][0]
+            pairs = [replacement if i == last else pair
+                     for i, pair in enumerate(pairs) if i not in indices or i == last]
+
+        # A complete, known flex shorthand resets all three longhands. Remove
+        # earlier overrides, or later ones only when they equal the shorthand.
+        flexes = [(i, val) for i, (key, val) in enumerate(pairs) if key == "flex"]
+        if len(flexes) == 1:
+            index, flex = flexes[0]
+            tokens = flex.split()
+            if flex == "none":
+                tokens = ["0", "0", "auto"]
+            elif flex == "auto":
+                tokens = ["1", "1", "auto"]
+            if (len(tokens) == 3 and
+                    all(re.fullmatch(r"\d+(?:\.\d+)?", t) for t in tokens[:2]) and
+                    re.fullmatch(r"auto|0|(?:\d+(?:\.\d+)?|\.\d+)(?:px|%)", tokens[2])):
+                contract = dict(zip(("flex-grow", "flex-shrink", "flex-basis"), tokens))
+                pairs = [(key, val) for i, (key, val) in enumerate(pairs)
+                         if key not in contract or not (i < index or val == contract[key])]
+        result = ";".join(key + ":" + val for key, val in pairs) + ";"
+        # Style attributes can be entity-encoded; compare the actual serialized
+        # sizes so a nominal CSS win cannot make the HTML larger.
+        replacement = 'style="' + escape_style_attribute(result) + '"'
+        return replacement if len(replacement) < len(match[0]) else match[0]
+
+    # SVG is provenance-sensitive and has a separate geometry/paint contract.
+    return re.sub(r"<svg\b.*?</svg>|\bstyle=\"([^\"]*)\"",
+                  lambda m: m[0] if m[1] is None else minimize(m), value, flags=re.S)
+
+
 def allocate_template_fonts(value, property_name="font-family"):
     """Allocate independent inherited typography before slot fill.
 
@@ -1388,7 +1465,9 @@ def compile_templates(theme, nodes):
                      if k not in {"display", "flex-direction", "gap"}) + ";"
     result["prose_card_single_in_article"] = (
         '<p style="' + escape_style_attribute(style) + '">{{body_html}}</p>')
-    return result
+    # Run only after structural matching and all named inheritance variants.
+    # Runtime assembly must not normalize user content or template slot values.
+    return {key: minimize_template_declarations(value) for key, value in result.items()}
 
 
 DISPLAY = {

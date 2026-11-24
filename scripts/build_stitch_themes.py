@@ -1225,12 +1225,16 @@ def source_components():
                 left.children = left.elements()[:2]
                 result["signature_no_qr_"+slug] = no_qr
             elif name == "engagement":
-                text_slots(value,{"如果觉得有用，随手点个赞、在看、转发三连吧。":"message"})
-                value.children = [
-                    child for child in value.children
-                    if not (isinstance(child, Node) and
-                            child.text().strip() == "感谢阅读 · 原创排版设计分享")
-                ]
+                # Article HTML cannot invoke WeChat's native engagement actions.
+                # Use an editorial invitation, not a second set of fake buttons.
+                # Keep custom messages as the sole content; do not append a
+                # fixed action row that could contradict the author's wording.
+                value = Node("section", {
+                    "style": "border-top:1px solid #e0e3e5;padding-top:16px;"
+                }, [Node("p", {
+                    "class": "text-on-surface",
+                    "style": "margin:0;font-size:13px;line-height:1.8;"
+                }, ["{{message}}"])])
             result[name+"_"+slug]=value
         heading = next(main.nodes("h2"))
         container = heading
@@ -1403,7 +1407,7 @@ DISPLAY = {
     "table": "横滑安全表格", "table_cell": "表格单元格", "image": "相框与图注",
     "link": "外链展示卡", "footnote": "脚注", "divider": "微点分割线",
     "details": "静态补充阅读（展开）", "signature": "文末压舱名片",
-    "engagement": "互动微胶囊", "toc": "横滑目录", "toc_item": "目录项",
+    "engagement": "文末互动提示（非按钮）", "toc": "横滑目录", "toc_item": "目录项",
 }
 
 

@@ -169,7 +169,7 @@ class StitchTests(unittest.TestCase):
                                   bio="只有简介", qr_url="https://example.com/qr.png").render("# 标题")
                 self.assertNotIn("只有简介", output)
                 self.assertNotIn("https://example.com/qr.png", output)
-                self.assertIn("既然看到这里了", output)
+                self.assertIn("如果这篇对你有帮助", output)
             for bio in (None, "", " \t"):
                 output = Renderer("emerald", layout, author="张三", bio=bio).render("# 标题")
                 self.assertIn("张三", output)
@@ -178,20 +178,27 @@ class StitchTests(unittest.TestCase):
                 self.assertNotRegex(output, r'<p\b[^>]*><span leaf=""></span></p>')
                 self.assertNotIn("扫码关注", output)
 
-    def test_share_icons_and_labels_are_not_substituted(self):
+    def test_engagement_is_editorial_text_not_fake_action_buttons(self):
         for layout in LAYOUTS:
             value = component("emerald", "engagement_"+layout, message="正文提示")
             text = Text(value).text()
-            self.assertIn("点赞", text)
-            self.assertIn("在看", text)
-            self.assertIn("转发", text)
-            self.assertNotIn("♡", text)
-            self.assertTrue("padding-top:8px" in value or
-                            "padding:8px 0px 0px;" in value or "padding:8px 0 0;" in value)
-            for icon in ("thumb_up", "visibility", "share"):
-                path = re.search(r'<path d="([^"]+)"', (ROOT/"assets/stitch/icons"/(icon+".svg")).read_text())[1]
-                self.assertIn(path, value)
-            self.assertIn("color:#121c2a", value)
+            self.assertEqual("正文提示", text)
+            for unwanted in ("<svg", "<button", "<a ", "cursor:", "border-radius:", "box-shadow:", "background:"):
+                self.assertNotIn(unwanted, value)
+            self.assertIn("border-top:", value)
+            output = Renderer("emerald", layout).render("# 标题\n\n正文。")
+            for label in ("点赞", "分享", "在看"):
+                self.assertEqual(Text(output).text().count(label), 1)
+            self.assertNotIn("转发", output)
+            self.assertNotIn("三连", output)
+
+    def test_explicit_engagement_copy_is_preserved_without_extra_actions(self):
+        for layout in LAYOUTS:
+            output = Renderer("emerald", layout).render(
+                "# 标题\n\n::: engagement\n欢迎转发给同事，也欢迎留言讨论。\n:::")
+            self.assertEqual(Text(output).text().count("欢迎转发给同事，也欢迎留言讨论。"), 1)
+            self.assertNotIn("如果这篇对你有帮助", output)
+            self.assertNotIn("点赞", output)
 
     def test_original_palette_comparison_has_the_same_source_content(self):
         from build_stitch_comparison import ORIGINAL
@@ -279,8 +286,9 @@ class TemplateStyleTests(unittest.TestCase):
             for layout in LAYOUTS:
                 output = templates(theme["id"])["engagement_" + layout]
                 self.assertNotIn("感谢阅读 · 原创排版设计分享", output)
-                for label in ("点赞", "在看", "转发", "既然看到这里了"):
-                    self.assertIn(label, Text(output).text())
+                self.assertEqual(Text(output).text(), "{{message}}")
+                for stale in ("转发", "三连", "既然看到这里了"):
+                    self.assertNotIn(stale, output)
 
     def test_semantic_colors_keep_distinct_background_and_deep_text_roles(self):
         from build_stitch_themes import semantic_palette
@@ -297,9 +305,6 @@ class TemplateStyleTests(unittest.TestCase):
                                  for i in (1, 3, 5)))
             data = templates(theme["id"])
             for layout in LAYOUTS:
-                engagement = data["engagement_" + layout + "_in_article"].lower()
-                self.assertIn("background:" + palette["card_surface"].lower(), engagement)
-                self.assertIn("background:" + palette["emphasis_surface"].lower(), engagement)
                 signature = data["signature_" + layout + "_in_article"].lower()
                 self.assertIn("color:" + palette["on_deep_muted"].lower(), signature)
 

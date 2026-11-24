@@ -178,27 +178,32 @@ class StitchTests(unittest.TestCase):
                 self.assertNotRegex(output, r'<p\b[^>]*><span leaf=""></span></p>')
                 self.assertNotIn("扫码关注", output)
 
-    def test_engagement_is_editorial_text_not_fake_action_buttons(self):
+    def test_engagement_restores_source_card_as_static_rich_text(self):
         for layout in LAYOUTS:
             value = component("emerald", "engagement_"+layout, message="正文提示")
             text = Text(value).text()
-            self.assertEqual("正文提示", text)
-            for unwanted in ("<svg", "<button", "<a ", "cursor:", "border-radius:", "box-shadow:", "background:"):
+            self.assertIn("正文提示", text)
+            self.assertIn("既然看到这里了", text)
+            for label in ("点赞", "在看", "分享"):
+                self.assertEqual(text.count(label), 1)
+            for unwanted in ("<button", "<a ", "<script", "onclick="):
                 self.assertNotIn(unwanted, value)
-            self.assertIn("border-top:", value)
+            for restored in ("<svg", "border-radius:", "background:"):
+                self.assertIn(restored, value)
+            self.assertEqual(validate(value)[:2], ([], []))
             output = Renderer("emerald", layout).render("# 标题\n\n正文。")
             for label in ("点赞", "分享", "在看"):
-                self.assertEqual(Text(output).text().count(label), 1)
-            self.assertNotIn("转发", output)
+                self.assertEqual(Text(output).text().count(label), 2)
+            self.assertNotIn("转发", Text(output).text())
             self.assertNotIn("三连", output)
 
-    def test_explicit_engagement_copy_is_preserved_without_extra_actions(self):
+    def test_explicit_engagement_copy_is_preserved_inside_restored_card(self):
         for layout in LAYOUTS:
             output = Renderer("emerald", layout).render(
                 "# 标题\n\n::: engagement\n欢迎转发给同事，也欢迎留言讨论。\n:::")
             self.assertEqual(Text(output).text().count("欢迎转发给同事，也欢迎留言讨论。"), 1)
             self.assertNotIn("如果这篇对你有帮助", output)
-            self.assertNotIn("点赞", output)
+            self.assertEqual(Text(output).text().count("点赞"), 1)
 
     def test_original_palette_comparison_has_the_same_source_content(self):
         from build_stitch_comparison import ORIGINAL
@@ -213,7 +218,7 @@ class StitchTests(unittest.TestCase):
 
     def test_signature_is_merged_not_duplicated(self):
         source = "# 标题\n\n正文内容。\n\n我是张三，研究排版。如果这篇有用，请转发。"
-        output = Renderer().render(source)
+        output = Renderer(author="张三").render(source)
         text = Text(output).text()
         self.assertEqual(text.count("张三"), 1)
         self.assertIn("研究排版。", text)
@@ -296,9 +301,30 @@ class TemplateStyleTests(unittest.TestCase):
             for layout in LAYOUTS:
                 output = templates(theme["id"])["engagement_" + layout]
                 self.assertNotIn("感谢阅读 · 原创排版设计分享", output)
-                self.assertEqual(Text(output).text(), "{{message}}")
-                for stale in ("转发", "三连", "既然看到这里了"):
-                    self.assertNotIn(stale, output)
+                self.assertEqual(Text(output).text(),
+                                 "既然看到这里了{{message}}点赞在看分享感谢阅读")
+                self.assertNotIn("三连", output)
+
+    def test_skill_has_no_default_identity_and_cards_require_author(self):
+        skill = (ROOT / "SKILL.md").read_text()
+        self.assertNotIn('--author "Jacob" --bio "致力于分享一些AI技术、AI干货内容。"', skill)
+        for source in ("# 标题\n\n我是张三，研究排版。",
+                       "# 标题\n\n::: author 张三\n研究排版。\n:::"):
+            output = Renderer().render(source)
+            self.assertIn("张三", Text(output).text())
+            self.assertEqual(Text(output).text().count("张三"), 1)
+            self.assertNotIn("{{作者名}}", output)
+            self.assertNotIn("扫码关注", output)
+            self.assertEqual(validate(output)[:2], ([], []))
+        for layout in LAYOUTS:
+            output = Renderer("emerald", layout, author="Jacob",
+                              bio="致力于分享一些AI技术、AI干货内容。").render("# 标题\n\n正文。")
+            text = Text(output).text()
+            self.assertEqual(text.count("Jacob"), 1)
+            self.assertEqual(text.count("致力于分享一些AI技术、AI干货内容。"), 1)
+            self.assertEqual(text.count("既然看到这里了"), 1)
+            self.assertNotIn("<img", output)
+            self.assertEqual(validate(output)[:2], ([], []))
 
     def test_semantic_colors_keep_distinct_background_and_deep_text_roles(self):
         from build_stitch_themes import semantic_palette

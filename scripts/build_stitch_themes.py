@@ -309,6 +309,16 @@ def minimize_template_declarations(value):
         if any(key in {"all", "direction", "writing-mode"} or key.startswith("--")
                or "!important" in val for key, val in pairs):
             return match[0]
+        # Only identical simple solid colors: do not infer equivalence for
+        # gradients, images, CSS-wide values or other background longhands.
+        backgrounds = [(i, val) for i, (key, val) in enumerate(pairs)
+                       if key == "background"]
+        if len(backgrounds) == 1:
+            index, color = backgrounds[0]
+            if re.fullmatch(r"#[\da-fA-F]{3,8}", color):
+                pairs = [(key, val) for i, (key, val) in enumerate(pairs)
+                         if not (key == "background-color" and
+                                 i < index and val.lower() == color.lower())]
         for base in ("margin", "padding"):
             keys = [base + "-" + side for side in ("top", "right", "bottom", "left")]
             relevant = [(i, key, val) for i, (key, val) in enumerate(pairs)
@@ -1302,16 +1312,17 @@ def source_components():
                 left.children = left.elements()[:2]
                 result["signature_no_qr_"+slug] = no_qr
             elif name == "engagement":
-                # Article HTML cannot invoke WeChat's native engagement actions.
-                # Use an editorial invitation, not a second set of fake buttons.
-                # Keep custom messages as the sole content; do not append a
-                # fixed action row that could contradict the author's wording.
-                value = Node("section", {
-                    "style": "border-top:1px solid #e0e3e5;padding-top:16px;"
-                }, [Node("p", {
-                    "class": "text-on-surface",
-                    "style": "margin:0;font-size:13px;line-height:1.8;"
-                }, ["{{message}}"])])
+                # Preserve the approved source card and icon/action row.
+                # Compiler converts buttons to static rich-text spans;
+                # these ornaments do not invoke native WeChat actions.
+                slot(next(value.nodes("p")), "message")
+                # Rename only the static action label, never author content.
+                for action in value.elements()[2].elements():
+                    for label in action.elements():
+                        if label.text().strip() == "转发":
+                            label.children = ["分享"]
+                credit = value.elements()[-1]
+                credit.children = ["感谢阅读"]
             result[name+"_"+slug]=value
         heading = next(main.nodes("h2"))
         container = heading
@@ -1360,7 +1371,7 @@ def compile_templates(theme, nodes):
     # Dynamic markup must replace the wrapping leaf span, not nest block HTML in it.
     for key, value in result.items():
         result[key] = re.sub(r'<span leaf="">(\{\{[a-z_]+_html\}\})</span>', r"\1", value)
-    result["container"] = '<section style="max-width:677px;margin:0 auto;padding:20px 16px;background:#FFFFFF;color:#3d4a42;font-family:%s;font-size:14px;line-height:26.6px;letter-spacing:.5px;box-sizing:border-box;overflow-wrap:anywhere;">{{body_html}}</section>' % FONT
+    result["container"] = '<section style="max-width:677px;margin:0 auto;padding:20px 16px;background:#FFFFFF;color:#3d4a42;font-family:%s;font-size:14px;font-weight:400;line-height:26.6px;letter-spacing:.5px;box-sizing:border-box;overflow-wrap:anywhere;">{{body_html}}</section>' % FONT
     # The original article uses gap-6; only top-level blocks get this gap.
     for key in list(result):
         if key not in {"container", "paragraph", "code_row", "table_cell", "footnote", "divider", "list"} and not key.startswith(("toc_item", "unordered_item", "ordered_item", "task_item")):
@@ -1399,6 +1410,60 @@ def compile_templates(theme, nodes):
         code_body, result["code"])
     result["code_row_in_rows"] = result["code_row_in_frame"].replace(
         "line-height:1.6;", "")
+    # The two labels share a font, but their existing size/line-height/color
+    # remain separate. Only move it inside the known textless flex header:
+    # never across the dynamic code-body slot or onto arbitrary author HTML.
+    def share_code_header_font(header):
+        fonts = re.findall(r"font-family:([^;]+);", header)
+        if len(fonts) != 2 or fonts[0] != fonts[1] or "monospace" not in fonts[0]:
+            raise ValueError("Unexpected code header font contract")
+        header = re.sub(r"font-family:[^;]+;", "", header)
+        return header.replace('style="', 'style="font-family:' + fonts[0] + ';', 1)
+    for key in ("code", "code_with_rows"):
+        header_start = result[key].find("<section", result[key].find(">") + 1)
+        header_end = result[key].find("{{language}}</span></section>") + len(
+            "{{language}}</span></section>")
+        if header_start < 0 or header_end <= header_start:
+            raise ValueError("Unexpected code header structure")
+        header = result[key][header_start:header_end]
+        result[key] = (result[key][:header_start] +
+                       share_code_header_font(header) +
+                       result[key][header_end:])
+    # Dedicated table/cell assembly contract. Keep standalone templates intact:
+    # th has native bold styling and the renderer still owns its header override.
+    cell_pairs = declarations(html.unescape(
+        re.search(r'style="([^"]*)"', result["table_cell"])[1]))
+    cell_shared = {key: val for key, val in cell_pairs
+                   if key in {"font-size", "line-height", "overflow-wrap"}}
+    def table_typography(match):
+        pairs = declarations(html.unescape(match[1]))
+        pairs = [(key, val) for key, val in pairs if key not in cell_shared]
+        pairs += list(cell_shared.items())
+        return '<table style="' + escape_style_attribute(
+            ";".join(key + ":" + val for key, val in pairs) + ";") + '">'
+    result["table_with_cells"] = re.sub(
+        r'<table style="([^"]*)">', table_typography, result["table"], count=1)
+    # Known static table, no side border/image overrides: retain the width
+    # reset, but discard the unused solid/color paint at zero width.
+    def zero_table_border(match):
+        pairs = declarations(html.unescape(match[1]))
+        borders = [(key, val) for key, val in pairs if key.startswith("border")]
+        if (all(key in {"border", "border-collapse"} for key, _ in borders) and
+                sum(key == "border" for key, _ in borders) == 1):
+            pairs = [(key, "0" if key == "border" and
+                      re.fullmatch(r"0 solid rgba\([\d.,]+\)", val) else val)
+                     for key, val in pairs]
+        return '<table style="' + escape_style_attribute(
+            ";".join(key + ":" + val for key, val in pairs) + ";") + '">'
+    result["table_with_cells"] = re.sub(
+        r'<table style="([^"]*)">', zero_table_border,
+        result["table_with_cells"], count=1)
+    result["table_cell_in_table"] = re.sub(
+        r'style="([^"]*)"',
+        lambda _: 'style="' + escape_style_attribute(
+            ";".join(key + ":" + val for key, val in cell_pairs
+                     if key not in cell_shared) + ";") + '"',
+        result["table_cell"], count=1)
     def inherited_variant(value, contract):
         return clean_template_styles(value, minimal=True, inherited={
             key: val for key, val in contract.items() if key in INHERITED_TYPOGRAPHY})
@@ -1447,7 +1512,8 @@ def compile_templates(theme, nodes):
     # All normal components inherit the single global system-font stack.
     # Standalone components should be placed inside this container as well.
     result["container_in_article"] = result["container"]
-    direct += ["step", "code", "code_with_rows", "image", "table", "divider", "list_with_items"]
+    direct += ["step", "code", "code_with_rows", "image", "table", "table_with_cells",
+               "divider", "list_with_items"]
     for key in direct:
         value = result[key]
         result[key + "_in_article"] = inherited_variant(value, contract)
@@ -1484,9 +1550,11 @@ DISPLAY = {
     "ordered_item": "数字列表项", "task_item": "任务列表项", "list": "列表容器",
     "list_with_items": "列表容器（与列表内变体配套）",
     "table": "横滑安全表格", "table_cell": "表格单元格", "image": "相框与图注",
+    "table_with_cells": "表格（与共享字体单元格配套）",
+    "table_cell_in_table": "表格内单元格（继承配套表格字体）",
     "link": "外链展示卡", "footnote": "脚注", "divider": "微点分割线",
     "details": "静态补充阅读（展开）", "signature": "文末压舱名片",
-    "engagement": "文末互动提示（非按钮）", "toc": "横滑目录", "toc_item": "目录项",
+    "engagement": "文末互动卡片（静态图标动作行）", "toc": "横滑目录", "toc_item": "目录项",
 }
 
 
@@ -1498,6 +1566,7 @@ def reference(theme, templates):
         "> 下列 HTML 已内联、叶节点封装、移除网页交互；不要直接复制原始 HTML。",
         "> 普通字体仅在全局 `container` 定义，组件需放在该容器内继承；代码与刻意等宽的编号保留局部字体。字号、字重和行高仍按组件设计。",
         "> 普通正文直接使用 `paragraph_in_article`，不默认套用背景、边框、阴影卡片；`prose_card` 仅为显式卡片需求保留。",
+        "> 表格装配用 `table_with_cells` + `table_cell_in_table`（文章中使用前者的 `_in_article` 变体）；独立 `table_cell` 保留完整字体，不与共享字体变体混用。",
         "> `*_html` 字段仅放入已转换且校验通过的组件，其余字段按纯文本转义。", "",
         "## 设计变量速查表", "",
         "| 角色 | 值 |", "|---|---|",

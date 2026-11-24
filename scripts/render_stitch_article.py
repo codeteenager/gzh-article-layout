@@ -260,8 +260,15 @@ class Renderer:
                 if kind in {"author", "engagement"}:
                     # Preserve user-supplied block content in the sole footer.
                     if kind == "author":
-                        self.author = title or self.author or "{{作者名}}"
-                        self.bio = "\n".join(body)
+                        if self.author:
+                            self.bio = self.bio or "\n".join(body)
+                        else:
+                            # No author parameter means no card; keep the
+                            # supplied identity as ordinary article content.
+                            text = "\n".join(([title] if title else []) + body)
+                            if text.strip():
+                                out.append(self.c("paragraph", _in_article=prose_cards,
+                                                  body_html=self.inline(text).replace("\n", "<br>")))
                     else:
                         self.footer_message = "\n".join(body)
                 else:
@@ -295,16 +302,19 @@ class Renderer:
                 for row_index, row in enumerate(rows):
                     cells = []
                     for col, cell in enumerate(row):
-                        value = self.c("table_cell", body_html=self.inline(cell))
+                        value = self.c("table_cell_in_table", body_html=self.inline(cell))
                         alignment = separator[col] if col < len(separator) else ""
                         align = "center" if alignment.startswith(":") and alignment.endswith(":") else "right" if alignment.endswith(":") else "left"
-                        value = value.replace("padding:10px", "text-align:" + align + ";padding:10px")
+                        # td inherits left alignment from the paired table;
+                        # th needs an explicit override of its native centering.
+                        if align != "left" or row_index == 0:
+                            value = value.replace("padding:10px", "text-align:" + align + ";padding:10px")
                         if row_index == 0:
                             value = value.replace("<td ", "<th ").replace("</td>", "</th>")
                             value = value.replace("padding:10px", "background:" + self.theme["surface"] + ";font-weight:700;padding:10px")
                         cells.append(value)
                     rendered.append("<tr>" + "".join(cells) + "</tr>")
-                out.append(self.c("table", _in_article=prose_cards, rows_html="".join(rendered)))
+                out.append(self.c("table_with_cells", _in_article=prose_cards, rows_html="".join(rendered)))
                 continue
             image = re.fullmatch(r"\s*!\[([^\]]*)\]\((.+?)\)\s*", line)
             if image:
@@ -363,11 +373,11 @@ class Renderer:
         # Merge an original terminal signature, never duplicate it.
         self.footer_message = "如果这篇对你有帮助，欢迎点赞、分享给需要的朋友，或点个在看。"
         tail = next((i for i in range(len(lines) - 1, -1, -1) if lines[i].strip()), None)
-        if tail is not None and re.match(r"^我是[^，,。]+", lines[tail]):
+        if (self.author and tail is not None and
+                re.match(r"^我是" + re.escape(self.author) + r"[，,。]", lines[tail])):
             signature = lines.pop(tail)
             match = re.match(r"^我是([^，,。]+)[，,]?(.*)$", signature)
             if match:
-                self.author = self.author or match[1]
                 bio = match[2]
                 split = re.search(r"如果", bio)
                 if split:

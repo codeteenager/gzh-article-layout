@@ -1,7 +1,10 @@
 """Conservative final-pass CSS folding and boundary regressions."""
 import unittest
+import re
 
 from build_stitch_themes import minimize_template_declarations
+from stitch_themes import catalog, templates, LAYOUTS
+from render_stitch_article import Renderer
 
 
 def fragment(style):
@@ -9,6 +12,77 @@ def fragment(style):
 
 
 class DeclarationTests(unittest.TestCase):
+    def test_identical_background_before_shorthand_is_redundant(self):
+        self.assertEqual(minimize_template_declarations(fragment(
+            "background-color:#fff;color:red;background:#fff;")),
+            fragment("color:red;background:#fff;"))
+        for style in (
+            "background-color:#f00;background:#fff;",
+            "background:#fff;background-color:#fff;",
+            "background-color:inherit;background:inherit;",
+            "background-color:#fff;background:#fff!important;",
+            "background-color:#fff;background:url(image.png);",
+        ):
+            self.assertEqual(minimize_template_declarations(fragment(style)),
+                             fragment(style))
+
+    def test_table_assembly_contract_preserves_standalone(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("font-size:13px;", data["table_cell"])
+            self.assertIn("line-height:1.7;", data["table_cell"])
+            self.assertNotIn("font-size:", data["table_cell_in_table"])
+            self.assertNotIn("line-height:", data["table_cell_in_table"])
+            self.assertNotIn("overflow-wrap:", data["table_cell_in_table"])
+            self.assertIn("font-size:16px;", data["table"])
+            self.assertIn("font-size:13px;line-height:1.7;overflow-wrap:anywhere;",
+                          data["table_with_cells"])
+            for layout in LAYOUTS:
+                source = "# 标题\n\n| 左 | 中 | 右 |\n| :--- | :---: | ---: |\n| 内容 | **强调** | `code` |"
+                output = Renderer(theme["id"], layout).render(source)
+                self.assertEqual(output.count("<th "), 3)
+                self.assertEqual(output.count("<td "), 3)
+                for align in ("left", "center", "right"):
+                    self.assertEqual(len(re.findall(
+                        r'<t[hd] style="[^"]*text-align:' + align + r';', output)),
+                        1 if align == "left" else 2)
+                self.assertEqual(output.count("font-size:13px;line-height:1.7;overflow-wrap:anywhere;"), 1)
+
+    def test_code_header_shares_font_without_crossing_body(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            for key in ("code", "code_with_rows", "code_in_article",
+                        "code_with_rows_in_article"):
+                value = data[key]
+                header = value[value.find("<section", value.find(">") + 1):
+                               value.index("{{language}}</span></section>") +
+                               len("{{language}}</span></section>")]
+                self.assertEqual(header.count("font-family:"), 1)
+                self.assertIn('style="font-family:', header)
+                self.assertIn("font-family:", value[value.index(
+                    "{{language}}</span></section>") + len("{{language}}</span></section>"):])
+            self.assertIn("font-family:", data["code_row"])
+
+    def test_table_border_and_native_header_alignment(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("border:0 solid rgba(", data["table"])
+            self.assertNotIn("border:0 solid rgba(", data["table_with_cells"])
+            self.assertIn("border:0;", data["table_with_cells"])
+            for source in ("| 左 | 右 |\n| --- | --- |\n| 甲 | 乙 |",
+                           "| 左 | 右 |\n| :--- | ---: |\n| 甲 | 乙 |"):
+                value = Renderer(theme["id"]).blocks(source.splitlines())
+                self.assertRegex(value, r'<th style="[^"]*text-align:left;')
+                self.assertNotRegex(value, r'<td style="[^"]*text-align:left;')
+
+    def test_article_weight_contract_not_standalone_removal(self):
+        for theme in catalog():
+            data = templates(theme["id"])
+            self.assertIn("font-weight:400;", data["container"])
+            self.assertIn("font-weight:400;", data["paragraph"])
+            self.assertNotIn("font-weight:", data["paragraph_in_article"])
+            self.assertIn("font-weight:800;", data["chapter_ruler"])
+
     def test_spacing_follows_last_declaration(self):
         self.assertEqual(minimize_template_declarations(fragment(
             "margin:0;margin-top:4px;display:flow-root;margin-bottom:0;")),

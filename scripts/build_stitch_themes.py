@@ -296,6 +296,69 @@ def short_box(values):
     return " ".join(values)
 
 
+def remove_inert_template_styles(value):
+    """Remove narrowly proven inert declarations before filling any slots.
+
+    Do not infer child counts across dynamic HTML slots, alter SVG, or assume
+    that native elements have no UA padding/border.
+    """
+    def clean(match):
+        tag, style = match[1], html.unescape(match[2])
+        pairs = declarations(style)
+        props = dict(pairs)
+        if any(key in {"all", "columns", "column-count", "column-width"}
+               or key.startswith("--") or "!important" in val
+               or val in {"inherit", "initial", "unset", "revert", "revert-layer"}
+               for key, val in pairs):
+            return match[0]
+        removed = set()
+        # Only normal block sections: gap has no effect without flex/grid/
+        # multicolumn layout. Preserve other displays and native element rules.
+        if tag == "section" and props.get("display", "block") == "block":
+            removed.update({"gap", "row-gap", "column-gap"})
+        # The built-in bare image has no padding or border; avoid assumptions
+        # about arbitrary images with additional properties or native controls.
+        if (tag == "img" and props.get("box-sizing") == "border-box"
+                and set(props) <= {"box-sizing", "max-width", "height",
+                                   "margin", "display"}
+                and props.get("max-width") == "100%"
+                and props.get("height") == "auto"):
+            removed.add("box-sizing")
+        kept = [(k, v) for k, v in pairs if k not in removed]
+        if kept == pairs:
+            return match[0]
+        return match[0].replace(
+            'style="' + match[2] + '"',
+            'style="' + escape_style_attribute(
+                ";".join(k + ":" + v for k, v in kept) + ";") + '"', 1)
+
+    value = re.sub(
+        r'<svg\b.*?</svg>|<(section|img)\b[^>]*\bstyle="([^"]*)"[^>]*>',
+        lambda m: m[0] if m[1] is None else clean(m), value, flags=re.S)
+
+    def caption(match):
+        # A plain-text slot inside exactly one leaf span is one flex item.
+        style = html.unescape(match[1])
+        pairs = declarations(style)
+        props = dict(pairs)
+        if (props.get("display") != "flex" or
+                any(key in {"all", "flex-flow", "flex-wrap"} or key.startswith("--")
+                    or "!important" in val or "{{" in val
+                    for key, val in pairs)):
+            return match[0]
+        kept = [(k, v) for k, v in pairs
+                if k not in {"gap", "row-gap", "column-gap"}]
+        if kept == pairs:
+            return match[0]
+        return match[0].replace('style="' + match[1] + '"',
+            'style="' + escape_style_attribute(
+                ";".join(k + ":" + v for k, v in kept) + ";") + '"', 1)
+
+    return re.sub(
+        r'<figcaption style="([^"]*)"><span leaf="">\{\{caption\}\}</span></figcaption>',
+        caption, value)
+
+
 def minimize_template_declarations(value):
     """Final, bounded declaration folding; never optimize filled article HTML.
 
@@ -1555,7 +1618,8 @@ def compile_templates(theme, nodes):
         '<p style="' + escape_style_attribute(style) + '">{{body_html}}</p>')
     # Run only after structural matching and all named inheritance variants.
     # Runtime assembly must not normalize user content or template slot values.
-    return {key: minimize_template_declarations(value) for key, value in result.items()}
+    return {key: minimize_template_declarations(remove_inert_template_styles(value))
+            for key, value in result.items()}
 
 
 DISPLAY = {

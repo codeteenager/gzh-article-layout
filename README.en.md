@@ -81,6 +81,8 @@ Generate a browser preview I can copy from, and validate the output.
 
 The default is **墨规 · 翡翠林木** (`emerald + ruler`). You can also specify a theme, layout, and author details:
 
+In the normal agent workflow, the AI reads the component libraries, analyzes the article, adds semantic emphasis, and assembles HTML. Python validates the result and wraps the preview. The offline renderer below is a separate option, not the default assembly path for agent formatting.
+
 ```text
 Format article.md for WeChat.
 Theme: bamboo-teal; layout: overprint

@@ -55,16 +55,22 @@ class ReferenceStorageTests(unittest.TestCase):
         index = (ROOT / "references/theme-index.md").read_text(encoding="utf-8")
         cases = (ROOT / "references/eval-cases.md").read_text(encoding="utf-8")
         generator = (ROOT / "scripts/build_stitch_themes.py").read_text(encoding="utf-8")
+        normalize = (ROOT / "references/format-normalize.md").read_text(encoding="utf-8")
         self.assertIn("选主题与版式（自动推荐制）", skill)
         self.assertIn("等待用户答复后再读取所选主题组件库", skill)
         self.assertIn("只指定版式时也推荐色系，但保留指定版式", skill)
         self.assertIn("无明显倾向时使用索引第一行", skill)
-        for text in (skill, index, cases, generator):
+        for text in (skill, index, cases, generator, normalize):
             self.assertNotIn("固定默认参数", text)
             self.assertNotIn("不按题材自动换主题", text)
         self.assertIn("等待用户确认后再读取所选主题组件库并生成", index)
         self.assertIn("离线 CLI 仍默认 emerald + ruler", index)
         self.assertIn("确认前不读取候选主题组件库、不生成 HTML", cases)
+        self.assertIn("按题材自动选择最契合的主题", normalize)
+        self.assertIn("无明显倾向时使用索引第一行", normalize)
+        self.assertIn("保留用户已指定的主题和版式", normalize)
+        self.assertIn("所选主题登记的默认版式", normalize)
+        self.assertIn("离线 CLI 省略主题和版式时仍默认 `emerald + ruler`", normalize)
 
     def test_all_theme_documents_preserve_exact_templates(self):
         for theme in catalog():

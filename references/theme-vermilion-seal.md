@@ -555,8 +555,8 @@ HTML 同组件：`divider`。仅复用 HTML，使用位置仍按本条组件名�
 
 ## 完整文章模板骨架
 
-`container` → `hero` → 开头原文引言（若有，`quote`）→ `toc`（精选最多 3 项）→
-`chapter_ruler` + 原文段落/列表/代码/表格/图片 → `signature` → `engagement`。
+`container` → 同版式 `hero` → 开头原文引言（若有，同版式 `quote`）→ 同版式 `toc`（默认前 3 个 H2，不足则全部）→
+已确定版式的 `chapter` + 原文段落/列表/代码/表格/图片 → 可选同版式 `signature` → 唯一同版式 `engagement`。
 目录放在封面和开头引言之后；正文不得用组件库演示文案替换。
 名片与互动各最多一次；默认不传作者、不生成名片，原文署名作为正文保留。仅用户明确要求名片并提供真实作者信息时传 --author；简介和二维码仅使用用户提供的内容，不填默认值或占位符。
 原稿二维码为演示素材，仅画廊与对照页显式使用；生成文章用 --qr-url 提供真实二维码，保留 88px 右栏、72px 图片与关注提示。无二维码时使用明确的无二维码名片变体。
@@ -564,19 +564,21 @@ HTML 同组件：`divider`。仅复用 HTML，使用位置仍按本条组件名�
 
 ## 文章类型 → 组件组合配方表
 
+配方只决定组件组合，不覆盖已确定主题与版式；只使用原文实际需要的组件。
+
 | 类型 | 核心组合 | 点缀上限 |
 |---|---|---|
-| 教程 / 工程解析 | 墨规章节 + step + code + list + warning | metric ≤ 3 种；有原文才使用 |
-| 人物 / 商业特刊 | 浮光章节 + quote + image + paragraph | pullquote ≤ 3 处 |
-| 随笔 / 文学 / 极简 | 素墨章节 + paragraph + quote | divider ≤ 3 处；不添加多余标签 |
-| 数据 / 报告 | 默认章节 + table + metric + paragraph | warning / pullquote 各 ≤ 2 处 |
+| 教程 / 工程解析 | 已定版式章节 + step + code + list + warning | metric ≤ 3 种；有原文才使用 |
+| 人物 / 商业特刊 | 已定版式章节 + quote + image + paragraph | pullquote ≤ 3 处 |
+| 随笔 / 文学 / 极简 | 已定版式章节 + paragraph + quote | divider ≤ 3 处；不添加多余标签 |
+| 数据 / 报告 | 已定版式章节 + table + metric + paragraph | warning / pullquote 各 ≤ 2 处 |
 
 ## Markdown → 组件映射规则表
 
 | Markdown | 组件 / 规则 |
 |---|---|
 | `#` | hero，纯文本主标题不添演示副标题 |
-| `##` / `###` | chapter（默认版式）/ step |
+| `##` / `###` | chapter（已确定版式）/ step |
 | 段落 / 加粗 / 高亮 / 下划线 | paragraph；主色加粗 / 纸底高亮 / 轻高光下划线 |
 | 删除线 | 真实删除线；不要改成荧光笔 |
 | 引用 / `::: quote` | quote / pullquote |

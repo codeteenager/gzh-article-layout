@@ -33,6 +33,22 @@ def read_components(text):
 
 
 class ReferenceStorageTests(unittest.TestCase):
+    def test_workflow_rules_do_not_conflict(self):
+        """Check documentation consistency, not AI semantic execution."""
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        cases = (ROOT / "references/eval-cases.md").read_text(encoding="utf-8")
+        self.assertIn("### 2. 读组件库（两份）", skill)
+        self.assertIn("仅用户明确要求精选时才另选最多 3 个", skill)
+        self.assertIn("名片可选、互动卡片唯一", skill)
+        self.assertIn("将引导原样移入唯一互动卡片", skill)
+        self.assertNotIn("默认用 `{{作者名}}` 占位", cases)
+        for theme in catalog():
+            text = reference(theme, templates(theme["id"]))
+            self.assertIn("配方只决定组件组合，不覆盖已确定主题与版式", text)
+            self.assertIn("可选同版式 `signature`", text)
+            self.assertIn("默认前 3 个 H2，不足则全部", text)
+            self.assertNotRegex(text, r"(?:墨规|浮光|素墨)章节 \+")
+
     def test_agent_theme_selection_policy_is_synchronized(self):
         """Guard routing docs; these assertions do not simulate AI judgment."""
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")

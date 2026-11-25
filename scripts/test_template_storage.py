@@ -1,5 +1,5 @@
 """Storage deduplication must never change resolved component HTML."""
-import json
+import re
 import unittest
 
 from stitch_themes import (ROOT, catalog, templates, compact_templates,
@@ -29,13 +29,13 @@ class TemplateStorageTests(unittest.TestCase):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 expand_templates(values)
 
-    def test_all_stored_templates_resolve_without_duplicate_literals(self):
+    def test_markdown_sources_have_no_duplicate_literals(self):
         for theme in catalog():
             with self.subTest(theme=theme["id"]):
-                stored = json.loads(
-                    (ROOT / "assets/stitch/templates" /
-                     (theme["id"] + ".json")).read_text(encoding="utf-8"))
-                literals = [v for v in stored.values() if isinstance(v, str)]
+                # Packing is only an in-memory test helper, never a second source.
+                stored = compact_templates(templates(theme["id"]))
+                text = (ROOT / "references" / ("theme-" + theme["id"] + ".md")).read_text(encoding="utf-8")
+                literals = re.findall(r"```html\n(.*?)\n```", text, re.S)
                 self.assertEqual(len(literals), len(set(literals)))
                 self.assertEqual(expand_templates(stored), templates(theme["id"]))
                 self.assertEqual(compact_templates(templates(theme["id"])), stored)

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Offline built-in theme catalog and safe, parameterized component templates."""
+"""Read authoritative Markdown themes and safely fill their component slots."""
 
 import html
-import json
 import re
 from functools import lru_cache
 from pathlib import Path
@@ -70,7 +69,99 @@ def merge_text_leaf_spans(value):
 
 @lru_cache(maxsize=1)
 def catalog():
-    return json.loads((ROOT / "assets/stitch/themes.json").read_text(encoding="utf-8"))
+    return read_catalog(ROOT)
+
+
+def read_components(text):
+    """Read component definitions and one-hop, same-document aliases."""
+    match = re.search(r"^## 各组件完整 HTML\s*\n(.*?)(?=^## |\Z)",
+                      text, re.M | re.S)
+    if not match:
+        raise ValueError("缺少各组件完整 HTML 章节")
+    literals, aliases, order = {}, {}, []
+    # Ignore heading-like text inside fenced HTML.
+    heading = None
+    body = []
+    sections = []
+    fenced = False
+    for line in match[1].splitlines():
+        if line.startswith("```"):
+            fenced = not fenced
+        if not fenced and line.startswith("### "):
+            if heading is not None:
+                sections.append((heading, "\n".join(body)))
+            heading, body = line, []
+        else:
+            body.append(line)
+    if fenced:
+        raise ValueError("组件 HTML 围栏未闭合")
+    if heading is not None:
+        sections.append((heading, "\n".join(body)))
+    for heading, body in sections:
+        key_match = re.search(r" · `([a-z][a-z0-9_]*)`$", heading)
+        if not key_match:
+            raise ValueError("无效组件标题：" + heading)
+        key = key_match[1]
+        if key in order:
+            raise ValueError("重复组件：" + key)
+        order.append(key)
+        blocks = re.findall(r"^```html\n(.*?)\n```[ \t]*$", body, re.M | re.S)
+        refs = re.findall(r"^HTML 同组件：`([^`]+)`。", body, re.M)
+        if len(blocks) + len(refs) != 1:
+            raise ValueError("组件须有且仅有一个 HTML 定义或引用：" + key)
+        if blocks:
+            literals[key] = blocks[0]
+        else:
+            aliases[key] = refs[0]
+    if not order:
+        raise ValueError("组件库为空")
+    for key, target in aliases.items():
+        if target not in literals:
+            raise ValueError("无效或链式组件引用：" + key + " → " + target)
+    return {key: literals[key] if key in literals else literals[aliases[key]]
+            for key in order}
+
+
+def read_catalog(root):
+    """Index is the registry; semantic palette values come from each library."""
+    themes, seen = [], set()
+    index = (root / "references/theme-index.md").read_text(encoding="utf-8")
+    for line in index.splitlines():
+        if not line.startswith("|") or "references/theme-" not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5:
+            raise ValueError("无效主题登记行：" + line)
+        name, primary, scene, path, underline = cells
+        path_match = re.fullmatch(r"`references/theme-([a-z0-9]+(?:-[a-z0-9]+)*)\.md`", path)
+        if not path_match:
+            raise ValueError("无效主题路径：" + path)
+        theme_id = path_match[1]
+        if theme_id in seen:
+            raise ValueError("重复主题：" + theme_id)
+        seen.add(theme_id)
+        text = (root / "references" / ("theme-" + theme_id + ".md")).read_text(encoding="utf-8")
+        palette = {}
+        for role, field in (("主色", "primary"), ("轻高光", "accent"),
+                            ("纸质底色", "surface"), ("压舱深色", "deep")):
+            value = re.search(r"^\| " + role + r" \| `(?P<color>#[0-9A-Fa-f]{6})` \|$", text, re.M)
+            if not value:
+                raise ValueError("主题 %s 缺少色值：%s" % (theme_id, role))
+            palette[field] = value["color"].upper()
+        layout = re.search(r"^\| 默认章节版式 \| (墨规|浮光|素墨)", text, re.M)
+        if not layout:
+            raise ValueError("主题缺少默认章节版式：" + theme_id)
+        layout_id = {value: key for key, value in LAYOUT_NAMES.items()}[layout[1]]
+        if primary != "`" + palette["primary"] + "`":
+            raise ValueError("索引与组件库主色不一致：" + theme_id)
+        expected = "border-bottom:2px solid %s;font-weight:600;" % palette["accent"]
+        if underline != "`" + expected + "`":
+            raise ValueError("索引与组件库下划线不一致：" + theme_id)
+        scene = re.sub(r"（默认(墨规|浮光|素墨)）$", "", scene)
+        themes.append(dict(id=theme_id, name=name, **palette, scene=scene, layout=layout_id))
+    if not themes:
+        raise ValueError("主题索引为空")
+    return themes
 
 
 def theme_by_id(theme_id):
@@ -83,9 +174,8 @@ def theme_by_id(theme_id):
 @lru_cache(maxsize=32)
 def templates(theme_id):
     theme_by_id(theme_id)
-    return expand_templates(json.loads(
-        (ROOT / "assets/stitch/templates" / (theme_id + ".json")).read_text(encoding="utf-8")
-    ))
+    return read_components(
+        (ROOT / "references" / ("theme-" + theme_id + ".md")).read_text(encoding="utf-8"))
 
 
 def compact_templates(values):

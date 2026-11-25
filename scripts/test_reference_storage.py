@@ -1,10 +1,11 @@
-"""Documentation aliases preserve every component and its exact HTML."""
+"""Markdown source aliases preserve every component and its exact HTML."""
 import re
 import unittest
 
 from build_stitch_themes import reference
 from component_lint import lint_file
 from stitch_themes import ROOT, catalog, templates
+from stitch_themes import read_components as load_components
 
 
 def read_components(text):
@@ -43,7 +44,7 @@ class ReferenceStorageTests(unittest.TestCase):
         self.assertIn("将引导原样移入唯一互动卡片", skill)
         self.assertNotIn("默认用 `{{作者名}}` 占位", cases)
         for theme in catalog():
-            text = reference(theme, templates(theme["id"]))
+            text = (ROOT / "references" / ("theme-" + theme["id"] + ".md")).read_text(encoding="utf-8")
             self.assertIn("配方只决定组件组合，不覆盖已确定主题与版式", text)
             self.assertIn("可选同版式 `signature`", text)
             self.assertIn("默认前 3 个 H2，不足则全部", text)
@@ -78,10 +79,10 @@ class ReferenceStorageTests(unittest.TestCase):
                 values = templates(theme["id"])
                 path = ROOT / "references" / ("theme-" + theme["id"] + ".md")
                 text = path.read_text(encoding="utf-8")
-                self.assertEqual(reference(theme, values), text)
                 keys, literals, aliases, resolved = read_components(text)
                 self.assertEqual(keys, list(values))
                 self.assertEqual(resolved, values)
+                self.assertEqual(load_components(text), values)
                 self.assertTrue(aliases)
                 self.assertEqual(len(literals), len(set(values.values())))
                 # Every alias resolves to a fenced literal scanned by the linter.

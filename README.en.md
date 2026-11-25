@@ -18,6 +18,8 @@
 
 It formats existing content rather than writing articles. When no theme is specified, the agent recommends one based on the article and waits for confirmation. Explicit auto-format requests skip confirmation and select a theme by topic.
 
+Themes use **Markdown as their single source of truth**: edit `references/theme-*.md` and `references/theme-index.md` directly. AI assembles articles from these components; Python handles extraction, validation, and preview packaging. The engineering renderer supports explicit scripted conversion, batch processing, regression tests, and galleries.
+
 ## Features
 
 - **15 built-in themes** across green, blue, red, purple, monochrome, and warm palettes.

@@ -7,7 +7,7 @@ import re
 import unittest
 from html.parser import HTMLParser
 
-from build_stitch_themes import clean_template_styles, compact_template_style, Compiler, Node, compile_templates, extract_catalog, source_components
+from build_stitch_themes import clean_template_styles, compact_template_style, Compiler, Node, extract_catalog
 from render_stitch_article import Renderer
 from stitch_themes import ROOT, LAYOUTS, catalog, chapter, component, templates
 from validate_gzh_html import validate
@@ -98,9 +98,10 @@ class StitchTests(unittest.TestCase):
                         + theme["primary"] + ';"></section>', output)
                     self.assertNotIn("linear-gradient(", output)
 
-    def test_15_exact_source_colorways(self):
-        self.assertEqual(catalog(), extract_catalog())
-        self.assertEqual(len(catalog()), 15)
+    def test_historical_palette_evidence_and_current_registry(self):
+        # Source evidence stays frozen; Markdown colours may evolve independently.
+        self.assertEqual(len(extract_catalog()), 15)
+        self.assertGreaterEqual(len(catalog()), 15)
         index = (ROOT / "references/theme-index.md").read_text()
         for theme in catalog():
             self.assertIn("theme-" + theme["id"] + ".md", index)
@@ -112,10 +113,11 @@ class StitchTests(unittest.TestCase):
         for source in manifest["screens"]:
             self.assertEqual(hashlib.sha256((ROOT / source["source"]).read_bytes()).hexdigest(), source["sha256"])
 
-    def test_templates_are_reproducible_from_sources(self):
-        nodes = source_components()
+    def test_templates_are_loaded_from_markdown_sources(self):
+        from stitch_themes import read_components
         for theme in catalog():
-            self.assertEqual(templates(theme["id"]), compile_templates(theme, nodes))
+            path = ROOT / "references" / ("theme-" + theme["id"] + ".md")
+            self.assertEqual(templates(theme["id"]), read_components(path.read_text(encoding="utf-8")))
 
     def test_all_45_combinations_pass_and_preserve_content(self):
         for theme in catalog():

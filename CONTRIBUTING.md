@@ -5,9 +5,9 @@
 ## 项目结构速览
 
 - `SKILL.md` — 排版工作流主文档（Agent 入口）
-- `references/` — 15 套内置主题组件库 + 通用增量库 + 主题索引 + 主题扩展规范 + 触发用例
-- `scripts/` — 主题构建、转换、回归和校验脚本（见下方「可验证循环」）
-- `assets/` — 演示输入文章 + 来源设计稿/色板/模板
+- `references/` — 主题唯一源码：Markdown 组件库、通用约定和主题索引；另含扩展规范与触发用例
+- `scripts/` — 输入提取、预览、回归、校验及来源对照辅助脚本
+- `assets/` — 演示输入、预览外壳、设计来源证据与图标许可
 - `docs/gallery/` — 主题风格的浏览器预览（不包含构建用 Markdown 副本）
 
 ## 可验证循环（改动前后都要跑）
@@ -39,8 +39,12 @@ python3 scripts/validate_gzh_html.py <生成的.html>
 
 - 一个 PR 只做一件事（一套新主题 / 一处修复 / 一处文档）。
 - commit 信息说清「改了什么 + 为什么」。
-- 不要提交本地排版产物（`.gitignore` 已忽略 `*_排版_*.html`）。
+- 不要提交本地排版产物，临时正文和预览写入临时目录；当前仓库没有 `.gitignore`。
 
 ## 修改内置主题
 
-优先修改 `scripts/build_stitch_themes.py` 的公众号适配逻辑，不只手改生成的组件库。执行 `build_stitch_themes.py`、`build_stitch_gallery.py` 和 `python3 -m unittest discover -s scripts -p 'test_*.py'` 后再检查 diff。原始源稿若更新，必须同时更新 manifest 的 SHA-256，禁止写入 API Key。
+直接修改对应的 `references/theme-*.md`；主色、下划线或默认版式变化时同步 `references/theme-index.md`。主题维护以 Markdown 为入口；`build_stitch_themes.py` 提供来源对照与 CSS 回归辅助函数，不用于生成主题库。
+
+运行 `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts -p 'test_*.py'` 与组件检查，再由 AI 装配样例并校验正文。需要更新画廊时另行运行 `build_stitch_gallery.py`；截图不会自动更新。
+
+工程渲染器和来源转换辅助函数用于回归，不是普通排版或主题维护的前置条件。任意自定义骨架可供 AI 使用，但工程渲染器只接受其已实现的组件键与三版式契约。

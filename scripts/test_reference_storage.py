@@ -33,6 +33,23 @@ def read_components(text):
 
 
 class ReferenceStorageTests(unittest.TestCase):
+    def test_agent_theme_selection_policy_is_synchronized(self):
+        """Guard routing docs; these assertions do not simulate AI judgment."""
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        index = (ROOT / "references/theme-index.md").read_text(encoding="utf-8")
+        cases = (ROOT / "references/eval-cases.md").read_text(encoding="utf-8")
+        generator = (ROOT / "scripts/build_stitch_themes.py").read_text(encoding="utf-8")
+        self.assertIn("选主题与版式（自动推荐制）", skill)
+        self.assertIn("等待用户答复后再读取所选主题组件库", skill)
+        self.assertIn("只指定版式时也推荐色系，但保留指定版式", skill)
+        self.assertIn("无明显倾向时使用索引第一行", skill)
+        for text in (skill, index, cases, generator):
+            self.assertNotIn("固定默认参数", text)
+            self.assertNotIn("不按题材自动换主题", text)
+        self.assertIn("等待用户确认后再读取所选主题组件库并生成", index)
+        self.assertIn("离线 CLI 仍默认 emerald + ruler", index)
+        self.assertIn("确认前不读取候选主题组件库、不生成 HTML", cases)
+
     def test_all_theme_documents_preserve_exact_templates(self):
         for theme in catalog():
             with self.subTest(theme=theme["id"]):

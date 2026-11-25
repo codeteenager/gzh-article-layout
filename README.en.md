@@ -16,7 +16,7 @@
 
 `gzh-article-layout` is a WeChat article layout Skill for AI agents. Provide Markdown or an article file, and the Skill organizes the content, applies theme components, and produces HTML for the WeChat editor, along with a browser preview and copy action.
 
-It formats existing content rather than writing articles. The default theme is **墨规 · 翡翠林木** (`emerald + ruler`); this combination is applied directly when no theme or layout is specified.
+It formats existing content rather than writing articles. When no theme is specified, the agent recommends one based on the article and waits for confirmation. Explicit auto-format requests skip confirmation and select a theme by topic.
 
 ## Features
 
@@ -79,7 +79,7 @@ Use gzh-article-layout to format article.md for a WeChat article.
 Generate a browser preview I can copy from, and validate the output.
 ```
 
-The default is **墨规 · 翡翠林木** (`emerald + ruler`). You can also specify a theme, layout, and author details:
+The agent first recommends a theme and asks for confirmation unless you specify one or request automatic formatting. You can specify a theme, layout, and author details:
 
 In the normal agent workflow, the AI reads the component libraries, analyzes the article, adds semantic emphasis, and assembles HTML. Python validates the result and wraps the preview. The offline renderer below is a separate option, not the default assembly path for agent formatting.
 
@@ -90,7 +90,7 @@ Author: Jacob
 Bio: Writing about product and engineering
 ```
 
-If only a theme is specified, its registered default layout is used. If only a layout is specified, it is combined with the default `emerald` palette. The agent recommends themes by topic only when explicitly asked.
+A specified theme is used without repeated confirmation, with its registered default layout unless overridden. If only a layout is specified, the agent recommends a palette and waits for confirmation while preserving that layout. Explicit auto-format requests select by topic without asking, falling back to the first index entry when no clear match exists; the selection rationale is included in delivery.
 
 For DOCX, PDF, TXT, or webpage text, the agent first normalizes the content to Markdown. By default, it confirms the resulting structure; say “format it directly” to skip that confirmation.
 
@@ -124,7 +124,7 @@ python3 scripts/extract_docx.py article.docx -o article.md
 ## Workflow
 
 1. Provide an article or file; normalize non-Markdown input to Markdown first.
-2. Choose a theme and layout, or use the default `emerald + ruler`.
+2. Specify a theme and layout, or confirm the agent’s topic-based recommendation; auto-format mode skips confirmation.
 3. Assemble theme components according to the article structure and generate HTML plus a browser preview.
 4. Validate the HTML, inspect the preview, and copy the content into the WeChat editor.
 
